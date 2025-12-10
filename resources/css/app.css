@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import "./profile/profile.css";
+@import "./home.css";
+@import "./admin/admin.css";

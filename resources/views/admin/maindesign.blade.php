@@ -36,55 +36,16 @@
 <body>
 <div class="d-flex">
     <!-- Sidebar -->
-    <nav class="sidebar p-3 flex-shrink-0" style="width: 220px;">
-        <h4 class="text-center text-white mb-4">Admin Panel</h4>
-        <ul class="nav flex-column">
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white d-flex align-items-center" href="">
-                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white d-flex align-items-center" href="#">
-                    <i class="bi bi-people me-2"></i> Users
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white d-flex align-items-center" href="#">
-                    <i class="bi bi-box-seam me-2"></i> Products
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white d-flex align-items-center" href="#">
-                    <i class="bi bi-basket me-2"></i> Orders
-                </a>
-            </li>
-            <li class="nav-item mt-3">
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-                {{-- <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-danger w-100">
-                        <i class="bi bi-box-arrow-right me-1"></i> Logout
-                    </button>
-                </form> --}}
-            </li>
-        </ul>
-    </nav>
-
+    @include('admin.sidebar')
     <!-- Main content -->
     <div class="flex-grow-1 p-4">
         <h2>@yield('page-title', 'Dashboard')</h2>
         <hr>
-        @yield('content')
+        @yield('dashboard')
+        @yield('add_category')
+        @yield('view_category')
+        @yield('update_category')
     </div>
 </div>
 

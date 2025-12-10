@@ -10,7 +10,11 @@ body {
 }
 .sidebar .nav-link:hover {
     background-color: #495057;
-    border-radius: 5px;
+    border-radius: 5px;@forelse ($collection as $item)
+
+    @empty
+
+    @endforelse
 }
 .card-icon {
     font-size: 2rem;
