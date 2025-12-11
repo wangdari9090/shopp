@@ -1,7 +1,8 @@
 @extends('masterdesign')
 @section('index')
 <!-- Categories -->
-    <h2 class="fw-bold text-center mb-4">Shop by Category</h2>
+    <section>
+         <h2 class="fw-bold text-center mb-4">Shop by Category</h2>
 
     <div class="row g-4 justify-content-center">
 
@@ -46,30 +47,43 @@
                 <h5 class="fw-semibold mt-2">Jewelry</h5>
             </div>
         </div>
+    </section> 
 
-    </div>
+
     <!-- Featured Products Section -->
 <section class="container my-5">
     <h2 class="fw-bold text-center mb-4">Featured Products</h2>
 
-    <div class="row g-4">
-
-        @foreach($products ?? [] as $product)
-        <div class="col-6 col-md-4 col-lg-3">
-            <div class="product-card">
-                <img src="{{ asset('storage/products/'.$product->product_image) }}" class="product-img w-100" alt="Product">
-
-                <div class="p-3">
-                    <h6 class="fw-semibold">{{ $product->product_title }}</h6>
-                    <p class="text-primary fw-bold">${{ $product->product_price }}</p>
-
-                    <a href="{{ route('productdetails', $product->id) }}" class="btn btn-outline-dark w-100 rounded-pill">View Details</a>
-                </div>
+  <div class="row g-4">
+    @foreach($products ?? [] as $product)
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="product-card shadow-sm">
+            
+            <div class="product-img-wrapper">
+                @if($product->product_image)
+                    <img src="{{ asset('storage/products/'.$product->product_image) }}" 
+                         class="product-img w-100" 
+                         alt="{{ $product->product_title }}">
+                @else
+                    <div class="no-image">No Image</div>
+                @endif
             </div>
-        </div>
-        @endforeach
 
+            <div class="product-footer p-3 text-center">
+                <h6 class="fw-semibold">{{ $product->product_title }}</h6>
+                <p class="text-primary fw-bold mb-3">${{ number_format($product->product_price, 2) }}</p>
+                <a href="{{ route('productdetails', $product->id) }}" 
+                   class="btn btn-outline-dark w-100 rounded-pill">
+                   View Details
+                </a>
+            </div>
+
+        </div>
     </div>
+    @endforeach
+</div>
+
+
 </section>
 <!-- Top Collections -->
 <section class="container my-5">
@@ -78,7 +92,7 @@
 <div class="row g-4">
 
     @foreach($collections as $product)
-    <div class="col-12 col-md-6 col-lg-4">
+    <div class="col-12 col-md-6 col-lg-3">
 
         <div class="collection-card position-relative rounded-4 overflow-hidden shadow-sm">
 

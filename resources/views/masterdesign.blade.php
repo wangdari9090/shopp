@@ -13,6 +13,9 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    @vite('resources/css/app.css')
 
     <style>
         body {
@@ -20,87 +23,6 @@
             background-color: #f5f7fa;
         }
 
-        /* Navbar */
-        .navbar {
-            backdrop-filter: blur(10px);
-            background: rgba(255,255,255,0.8);
-        }
-
-        /* Hero */
-        .hero {
-            height: 90vh;
-            background: url('{{ asset('assets/img/hero-pc.jpg') }}') center/cover no-repeat;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-        }
-
-        .hero::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.55);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 3;
-            animation: fadeIn 1.2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-
-        /* Category Boxes */
-        .category-box {
-            padding: 35px;
-            border-radius: 20px;
-            text-align: center;
-            background: white;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            transition: 0.3s;
-            cursor: pointer;
-        }
-
-        .category-box:hover {
-            transform: translateY(-7px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-        }
-
-        /* Product Cards */
-        .product-card {
-            background: rgba(255,255,255,0.7);
-            border-radius: 15px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
-            transition: 0.3s;
-        }
-
-        .product-card:hover {
-            transform: translateY(-6px);
-        }
-
-        .product-img {
-            height: 220px;
-            object-fit: cover;
-            border-radius: 15px 15px 0 0;
-        }
-
-        /* Footer */
-        footer {
-            background: #0d0d0d;
-            padding: 30px 0;
-        }
-
-        footer i {
-            font-size: 20px;
-            margin: 0 10px;
-        }
     </style>
 
 </head>
@@ -123,10 +45,10 @@
                 <li class="nav-item"><a class="nav-link fs-6" href="#">Contact</a></li>
 
                 @if(Auth::check())
-                    <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                 @else
                     <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-primary text-white px-3 rounded-pill" href="{{ route('register') }}">Sign Up</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-primary px-3 rounded-pill" href="{{ route('register') }}">Sign Up</a></li>
                 @endif
             </ul>
         </div>

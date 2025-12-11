@@ -126,7 +126,7 @@ public function postUpdateProduct(Request $request, $id){
 public function searchProduct(Request $request){
     $products = Product::where('product_title', 'LIKE', '%' .$request->search .'%' )
     ->orWhere('product_description', 'LIKE', '%' .$request->search .'%' )
-    ->paginate(2);
+    ->paginate(3);
     return view('admin.viewproduct', compact('products'));
 }
 // THE END
