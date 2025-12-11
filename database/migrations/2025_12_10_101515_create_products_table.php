@@ -14,29 +14,12 @@ return new class extends Migration
     Schema::create('products', function (Blueprint $table) {
         $table->id();
 
-        $table->string('title');
-        $table->text('description');
-
-        $table->unsignedBigInteger('category_id');
-
-        $table->decimal('price', 10, 2);
-        $table->decimal('discount_price', 10, 2)->nullable();
-
-        $table->integer('quantity');
-
-        $table->string('sku');
-        $table->string('tags')->nullable();
-
-        $table->enum('status', ['Active', 'Inactive'])->default('Active');
-
-        $table->string('image');
-
+        $table->string('product_title');
+        $table->text('product_description');
+        $table->integer('product_quantity');
+        $table->decimal('product_price', 10, 2);
+        $table->decimal('product_category', 10, 2)->nullable();
         $table->timestamps();
-
-        $table->foreign('category_id')
-              ->references('id')
-              ->on('categories')
-              ->onDelete('cascade');
     });
 }
 

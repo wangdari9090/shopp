@@ -46,6 +46,8 @@
         @yield('add_category')
         @yield('view_category')
         @yield('update_category')
+        @yield('add_product')
+        @yield('view_product')
     </div>
 </div>
 

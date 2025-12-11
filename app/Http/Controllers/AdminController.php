@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Product;
 use App\Models\Category;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
@@ -44,8 +45,21 @@ class AdminController extends Controller
     // End of Category Controller
 
     // Start of Product Controller
-    public function addProduct($id){
+    public function addProduct(){
         return view('admin.addproduct');
+    }
+    public function postAddProduct(Request $request){
+        $product = new Product();
+        $product->product_title = $request->product_title;
+        $product->product_description = $request->product_description;
+        $product->product_quantity = $request->product_quantity;
+        $product->product_price = $request->product_price;
+
+        return redirect()->route('admin.addproduct')->with('success', 'Product added successfully');
+    }
+    public function viewProduct(Category $category){
+        $products = Product::with('category')->get();
+        return view('admin.viewproduct',compact('products'));
     }
     // End of Product Controller
 

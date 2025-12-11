@@ -41,8 +41,8 @@
             </a>
 
             <ul class="collapse list-unstyled ps-4" id="productMenu">
-                <li><a href="#" class="dropdown-item-side">➤ Add Product</a></li>
-                <li><a href="#" class="dropdown-item-side">➤ All Products</a></li>
+                <li><a href="{{ route('admin.addproduct') }}" class="dropdown-item-side">➤ Add Product</a></li>
+                <li><a href="{{ route('admin.viewproduct') }}" class="dropdown-item-side">➤ View Products</a></li>
             </ul>
         </li>
 

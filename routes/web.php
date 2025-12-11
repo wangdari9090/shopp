@@ -29,10 +29,10 @@ Route::middleware('admin')->group(function () {
 
     Route::get('/update_category/{id}', [AdminController::class, 'updateCategory'])->name('admin.updatecategory');
 
-    Route::post('/update_category/{id}', [AdminController::class, 'postpdateCategory'])->name('admin.postupdatecategory');
+    Route::post('/update_category/{id}', [AdminController::class, 'postupdateCategory'])->name('admin.postupdatecategory');
 
 // Product Routes
-      Route::post('/add_product', [AdminController::class, 'addProduct'])->name('admin.addproduct');
+      Route::get('/add_product', [AdminController::class, 'addProduct'])->name('admin.addproduct');
 
     Route::post('/add_product', [AdminController::class, 'postAddProduct'])->name('admin.postaddproduct');
 
@@ -42,7 +42,7 @@ Route::middleware('admin')->group(function () {
 
     Route::get('/update_product/{id}', [AdminController::class, 'updateProduct'])->name('admin.updateproduct');
 
-    Route::post('/update_product/{id}', [AdminController::class, 'postpdateProduct'])->name('admin.postupdateproduct');
+    Route::post('/update_product/{id}', [AdminController::class, 'postupdateProduct'])->name('admin.postupdateproduct');
 
 // End of Product Routes
 });
