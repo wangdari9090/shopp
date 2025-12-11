@@ -15,21 +15,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
-    @vite('resources/css/app.css')
-
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f7fa;
-        }
-
-    </style>
+    {{-- @vite('resources/css/app.css') --}}
 
 </head>
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg tertiary shadow-sm fixed-top" style="background-color: #f8f9fa;">
     <div class="container">
         <a class="navbar-brand fw-bold fs-3" href="#">MyShop</a>
 
@@ -55,23 +47,24 @@
     </div>
 </nav>
 
-<section class="container my-5">
+<section class="container mt-5 pt-5">
     @yield('index')
     @yield('product_details')
 </section>
 
 <!-- Footer -->
-<footer class="text-center text-white">
-    <p class="mb-1">&copy; 2025 MyShop. All Rights Reserved.</p>
-
-    <div>
-        <i class="bi bi-facebook"></i>
-        <i class="bi bi-twitter"></i>
-        <i class="bi bi-instagram"></i>
+<footer class="bg-dark text-white py-4">
+    <div class="container text-center">
+        <p class="mb-2">&copy; 2025 MyShop. All Rights Reserved.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="#" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="text-white fs-4"><i class="bi bi-twitter"></i></a>
+            <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
+        </div>
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
