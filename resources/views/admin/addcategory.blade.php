@@ -33,7 +33,6 @@
                 class="form-control"
                 id="category"
                 placeholder="Enter category name"
-                required
             >
         </div>
 

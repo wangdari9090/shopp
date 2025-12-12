@@ -47,7 +47,7 @@
                         {{-- Category --}}
                         {{-- <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold">Category</label>
-                            <select name="product_category" class="form-select" required>
+                            <select name="product_category" class="form-select">
                             <option value="">-- Select Category --</option>
 
                             @foreach($categories as $category)

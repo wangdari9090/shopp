@@ -21,13 +21,13 @@
                 <div class="mb-3">
                     <label class="form-label">Product Title</label>
                     <input type="text" name="product_title" class="form-control"
-                           value="{{ $product->product_title }}" required>
+                           value="{{ $product->product_title }}">
                 </div>
 
                 <!-- Description -->
                 <div class="mb-3">
                     <label class="form-label">Description</label>
-                    <textarea name="product_description" class="form-control" rows="3" required>{{ $product->product_description }}</textarea>
+                    <textarea name="product_description" class="form-control" rows="3">{{ $product->product_description }}</textarea>
                 </div>
 
                 <!-- Price & Quantity -->
@@ -35,20 +35,20 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Price</label>
                         <input type="number" name="product_price" class="form-control"
-                               value="{{ $product->product_price }}" required>
+                               value="{{ $product->product_price }}">
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Quantity</label>
                         <input type="number" name="product_quantity" class="form-control"
-                               value="{{ $product->product_quantity }}" required>
+                               value="{{ $product->product_quantity }}">
                     </div>
                 </div>
 
                 <!-- Category -->
                 <div class="mb-3">
                     <label class="form-label">Category</label>
-                    <select name="product_category" class="form-control" required>
+                    <select name="product_category" class="form-control">
                         <option selected>{{ $product->product_category }}</option>
                         @foreach ($categories as $cat)
                             <option value="{{ $cat->category_name }}">{{ $cat->category_name }}</option>
