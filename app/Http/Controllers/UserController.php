@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductCart;
 use Illuminate\Http\Request;
@@ -81,22 +82,32 @@ class UserController extends Controller
         $cart_product->delete();
         return redirect()->back()->with('success','Product Removed from Cart');
     }
-    public function checkOut() {
-    $userId = Auth::id();
-    $cart = ProductCart::where('user_id', $userId)->with('product')->get();
-    $subtotal = $cart->sum(fn($item) => $item->product->product_price * $item->quantity);
+    public function confirmOrder(Request $request)
+    {
+        $cart_products = ProductCart::where('user_id', Auth::id())->get();
 
-    return view('checkout', compact('cart', 'subtotal'));
+        $address = $request->receiver_address;
+        $phone   = $request->receiver_phone;
+
+        foreach ($cart_products as $cart_product) {
+
+            $order = new Order();
+            $order->receiver_address = $address;
+            $order->receiver_phone   = $phone;
+            $order->user_id          = Auth::id();
+            $order->product_id       = $cart_product->product_id;
+            $order->save();
+        }
+        $carts = ProductCart::where('user_id', Auth::id())->get();
+
+        foreach ($carts as $cart) {
+            $cart_item = ProductCart::find($cart->id);
+            $cart_item->delete();
+        }
+
+        return redirect()->back()->with('confirm_order', 'Order Confirmed');
     }
 
-    public function placeOrder(Request $request) {
-
-        // Save order logic here...
-
-        ProductCart::where('user_id', Auth::id())->delete();
-
-        return redirect()->route('index')->with('success', 'Order placed successfully!');
-    }
 
 
 }

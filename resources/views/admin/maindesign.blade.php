@@ -32,7 +32,16 @@
         @yield('update_product')
     </div>
 </div>
+<!-- Footer -->
+<footer class="text-center text-white fixed-bottom bg-dark py-3 align-items-center p-4 mt-5">
+    <p class="mb-1">&copy; 2025 MyShop. All Rights Reserved.</p>
 
+    <div>
+        <i class="bi bi-facebook"></i>
+        <i class="bi bi-twitter"></i>
+        <i class="bi bi-instagram"></i>
+    </div>
+</footer>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 @stack('scripts')

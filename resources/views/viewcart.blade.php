@@ -106,14 +106,16 @@
                 <span>Sub Total:</span>
                 <strong>${{ number_format($subtotal, 2) }}</strong>
             </p>
+             <div class="mt-4 d-flex d-flex justify-content-between">
 
-            <a href="{{ route('checkout') }}" class="btn btn-primary w-100 mt-3">
-                Proceed to Checkout
-            </a>
-        </div>
-        <a href="{{ route('productdetails', $item->id) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back
+                 <a href="{{ route('index') }}" class="btn btn-outline-secondary btn-lg">
+                     <i class="bi bi-arrow-left"></i> Back
+                 </a>
+                <a href="{{ route('confirm_order') }}" class="btn btn-primary btn-lg px-4">
+                    Confirm Order
                 </a>
+
+            </div>
     </div>
 </div>
 

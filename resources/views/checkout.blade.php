@@ -32,7 +32,7 @@
 
                 <h5 class="fw-bold mb-3">Customer Information</h5>
 
-                <form action="{{ route('checkout') }}" method="POST">
+                <form action="{{ route('confirm_order') }}" method="POST">
                     @csrf
 
                     {{-- Email and Phone --}}
@@ -74,14 +74,21 @@
                     <div class="mb-3">
                         <label class="form-label">Order Notes (Optional)</label>
                         <textarea name="notes" class="form-control" rows="3"
-                                  placeholder="Notes about your order, delivery instructions, etc."></textarea>
+                                placeholder="Notes about your order"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mt-2">
-                        Complete Order
-                    </button>
+                   
+                    <div class="mt-4 d-flex d-flex justify-content-between">
 
+                 <a href="{{ route('index') }}" class="btn btn-outline-secondary btn-lg">
+                     <i class="bi bi-arrow-left"></i> Back
+                 </a>
+                  <button type="submit" class="btn btn-primary">
+                        Confirm Order
+                    </button>
+            </div>
                 </form>
+
             </div>
         </div>
 

@@ -17,9 +17,7 @@ Route::get('/view_cart/{id}', [UserController::class, 'viewCart'])->middleware([
 
 Route::delete('remove_cart_product/{id}', [UserController::class, 'removeCartproduct'])->middleware(['auth', 'verified'])->name('removecartproduct');
 
-Route::get('/checkout', [UserController::class, 'checkOut'])->middleware(['auth', 'verified'])->name('checkout');
-
-Route::post('/place_order', [UserController::class, 'placeOrder'])->middleware(['auth', 'verified'])->name('place_order');
+Route::get('/confirm_order', [UserController::class, 'confirmOrder'])->middleware(['auth', 'verified'])->name('confirm_order');
 
 
 Route::middleware('auth')->group(function () {

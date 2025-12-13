@@ -4,32 +4,12 @@
 @section('view_product')
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
 
-    <!-- Search Box (Left) -->
-    <form action="{{ route('admin.searchproduct') }}" method="post" class="d-flex" style="max-width: 280px; width: 100%;">
-        @csrf
-        <div class="input-group">
-            <input
-                type="text"
-                name="search"
-                class="form-control"
-                placeholder="Search..."
-                value="{{ request()->search }}"
-            >
-            <button class="btn btn-outline-secondary" type="submit">
-                <i class="bi bi-search"></i>
-            </button>
-        </div>
-    </form>
-
     <!-- Add Product Button (Right) -->
-    <a href="{{ route('admin.addproduct') }}" class="btn btn-primary">
+    <a href="{{ route('admin.addproduct') }}" class="btn btn-primary ms-5">
         <i class="bi bi-plus-lg me-1"></i> Add Product
     </a>
 
 </div>
-
-
-
 
     {{-- Success Message --}}
     @if(session('success'))
@@ -40,7 +20,7 @@
     @endif
 
     {{-- Table wrapper for horizontal scroll on mobile --}}
-    <div class="table-responsive">
+    <div class="table-responsive col-lg-9 ms-5">
     <table class="table table-bordered table-striped align-middle text-center">
     <thead class="table-dark">
         <tr>

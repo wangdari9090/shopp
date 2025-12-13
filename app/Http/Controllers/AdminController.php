@@ -90,10 +90,14 @@ public function updateProduct($id)
 
     return view('admin.updateproduct', compact('product', 'categories'));
 }
-public function postUpdateProduct(Request $request, $id){
 
-   $request->validate([
-        'category_id' => 'exists:categories,id',
+public function postUpdateProduct(Request $request, $id)
+{
+    $request->validate([
+        'product_title' => 'required|string',
+        'product_price' => 'required|numeric',
+        'product_quantity' => 'required|integer',
+        'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
     $product = Product::findOrFail($id);
@@ -102,17 +106,16 @@ public function postUpdateProduct(Request $request, $id){
     $product->product_description = $request->product_description;
     $product->product_quantity = $request->product_quantity;
     $product->product_price = $request->product_price;
-
-    // update image
     if ($request->hasFile('product_image')) {
-        if ($product->product_image && Storage::exists('public/products/'.$product->product_image)) {
-            Storage::delete('public/products/'.$product->product_image);
+
+        // Delete old image
+        if ($product->product_image && Storage::disk('public')->exists('products/'.$product->product_image)) {
+            Storage::disk('public')->delete('products/'.$product->product_image);
         }
 
-        // Save new image
-        $image = $request->file('product_image');
-        $imageName = time().'.'.$image->getClientOriginalExtension();
-        $image->storeAs('public/products', $imageName);
+        // Store new image
+        $imageName = uniqid().'_'.$request->file('product_image')->getClientOriginalName();
+        $request->file('product_image')->storeAs('products', $imageName, 'public');
 
         $product->product_image = $imageName;
     }
@@ -120,8 +123,39 @@ public function postUpdateProduct(Request $request, $id){
     $product->save();
 
     return redirect()->back()->with('success', 'Product Updated Successfully!');
-    // End of Product Controller
-    }
+}
+// public function postUpdateProduct(Request $request, $id){
+
+//    $request->validate([
+//         'category_id' => 'exists:categories,id',
+//     ]);
+
+//     $product = Product::findOrFail($id);
+
+//     $product->product_title = $request->product_title;
+//     $product->product_description = $request->product_description;
+//     $product->product_quantity = $request->product_quantity;
+//     $product->product_price = $request->product_price;
+
+//     // update image
+//     if ($request->hasFile('product_image')) {
+//         if ($product->product_image && Storage::exists('public/products/'.$product->product_image)) {
+//             Storage::delete('public/products/'.$product->product_image);
+//         }
+
+//         // Save new image
+//         $image = $request->file('product_image');
+//         $imageName = time().'.'.$image->getClientOriginalExtension();
+//         $image->storeAs('public/products', $imageName);
+
+//         $product->product_image = $imageName;
+//     }
+
+//     $product->save();
+
+//     return redirect()->back()->with('success', 'Product Updated Successfully!');
+//     // End of Product Controller
+//     }
 
 public function searchProduct(Request $request){
     $products = Product::where('product_title', 'LIKE', '%' .$request->search .'%' )

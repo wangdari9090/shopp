@@ -75,7 +75,7 @@
                         {{-- Image --}}
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold">Product Image</label>
-                            <input type="file" name="product_image" class="form-control">
+                            <input type="file" name="product_image" class="form-control" required>
                         </div>
 
                     </div>
@@ -84,7 +84,6 @@
                         <button type="submit" class="btn btn-primary px-4">Add Product</button>
                         <a href="{{ route('admin.viewproduct') }}" class="btn btn-outline-secondary px-4">Back</a>
                     </div>
-
                 </form>
 
             </div>
