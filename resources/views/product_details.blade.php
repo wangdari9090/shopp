@@ -51,7 +51,7 @@
                     </button>
                 </form>
 
-                <a href="{{ route('index') }}" class="btn btn-outline-secondary btn-lg">
+                <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-lg">
                     <i class="bi bi-arrow-left"></i> Back
                 </a>
 
@@ -68,7 +68,7 @@
 
         @foreach($related as $item)
             <div class="col-6 col-md-4 col-lg-3">
-                <a href="{{ route('productdetails', $item->id) }}" class="text-decoration-none">
+                <a href="{{ route('product.details', $item->id) }}" class="text-decoration-none">
                     <div class="card shadow-sm product-card h-100">
                         <img src="{{ asset('storage/products/' . $item->product_image) }}"
                              class="card-img-top"

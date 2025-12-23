@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
+    public function dashboard(){
+        return view('admin.dashboard');
+    }
     public function addCategory(){
         $categories = Category::all();
         return view("admin.addcategory", compact('categories'));
@@ -45,7 +48,7 @@ class AdminController extends Controller
         ]);
         $category->category = $request->category;
         $category->save();
-        return redirect()->route('admin.addcategory')
+        return redirect()->route('admin.categories.create')
                  ->with('success','Category added successfully');
 
     }
@@ -67,7 +70,7 @@ class AdminController extends Controller
         $category = Category::findOrFail($id);
        $category->category = $request->category;
        $category->save();
-       return redirect()->route('admin.viewcategory')
+       return redirect()->route('admin.categories.index')
                  ->with('success', 'Updated Successfully!');
     }
     // End of Category Controller

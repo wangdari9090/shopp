@@ -6,7 +6,7 @@
     <div class="card shadow-sm p-3 mx-auto" style="max-width: 1100px;">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">All Categories</h4>
-            <a href="{{ route('admin.addcategory') }}" class="btn btn-primary">
+            <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">
                 Add Category
             </a>
         </div>
@@ -34,7 +34,7 @@
                             <td>{{ $key + 1 }}</td>
                             <td class="text-start ps-3">{{ $cat->category }}</td>
                             <td>
-                                <a href="{{ route('admin.deletecategory', $cat->id) }}"
+                                <a href="{{ route('admin.categories.delete', $cat->id) }}"
                                    class="btn btn-sm btn-danger"
                                    onclick="return confirm('Are you sure you want to delete this category?');">
                                     <i class="bi bi-trash text-white"></i>

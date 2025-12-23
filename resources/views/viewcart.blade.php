@@ -21,7 +21,7 @@
         <div class="text-center py-5">
             <i class="bi bi-cart-x display-1 text-muted"></i>
             <h4 class="mt-3">Your cart is empty</h4>
-            <a href="{{ route('index') }}" class="btn btn-primary mt-3">Start Shopping</a>
+            <a href="{{ route('home') }}" class="btn btn-primary mt-3">Start Shopping</a>
         </div>
     @else
 
@@ -47,7 +47,7 @@
                             <span class="badge bg-secondary">Qty: {{ $item->quantity ?? 1 }}</span>
                         </div>
 
-                        <form action="{{ route('removecartproduct', $item->id) }}" method="POST">
+                        <form action="{{ route('cart.remove', $item->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-outline-danger btn-sm">
@@ -63,7 +63,7 @@
     </div>
 
     {{-- FORM START --}}
-    <form action="{{ route('confirm_order') }}" method="POST" class="col-md-8">
+    <form action="{{ route('order.confirm') }}" method="POST" class="col-md-8">
         @csrf
 
         <div class="row g-4">
@@ -120,7 +120,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="{{ route('productdetails', $item->product->id) }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('product.details', $item->product->id) }}" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Back
                             </a>
 

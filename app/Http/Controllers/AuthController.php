@@ -35,7 +35,7 @@ class AuthController extends Controller
 
     Auth::login($user);
 
-    return redirect()->route('index');
+    return redirect()->route('home');
     }
     public function login(Request $request)
     {
@@ -49,9 +49,9 @@ class AuthController extends Controller
 
             // Redirect based on role
             return redirect()->route(
-                Auth::user()->role === 'admin'
+                Auth::user()->user_type === 'admin'
                     ? 'admin.dashboard'
-                    : 'index'
+                    : 'home'
             );
         }
 
@@ -62,7 +62,7 @@ class AuthController extends Controller
     }
 
 
-    public function index()
+    public function dashboard()
     {
         // Example: count users for dashboard
         $userCount = User::count();
@@ -80,6 +80,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('index');
+        return redirect()->route('home');
     }
 }

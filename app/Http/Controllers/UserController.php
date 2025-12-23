@@ -16,7 +16,7 @@ class UserController extends Controller
     public function index()
     {
         if(Auth::check() && Auth::user()->user_type == 'user'){
-            return view('dashboard');
+            return view('index');
         }
         else if(Auth::check() && Auth::user()->user_type == 'admin'){
 
@@ -114,7 +114,7 @@ class UserController extends Controller
     return redirect()->back()->with('success','Added to Cart');
 
     }
-    public function viewCart($id){
+    public function viewCart(){
          if(Auth::check() && Auth::user()->user_type == 'user'){
             $count = ProductCart::where('user_id', Auth::id())->count();
             $cart = ProductCart::where('user_id', Auth::id())->get();

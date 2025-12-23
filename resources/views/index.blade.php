@@ -32,7 +32,7 @@
         @foreach($products ?? [] as $product)
         <div class="col-6 col-md-4 col-lg-3">
             <div class="product-card">
-                <a href="{{ route('productdetails', $product->id) }}">
+                <a href="{{ route('product.details', $product->id) }}">
                     <img src="{{ asset('storage/products/'.$product->product_image) }}" class="product-img w-100" alt="Product">
                 </a>
 
@@ -40,7 +40,7 @@
                     <h6 class="fw-semibold">{{ $product->product_title }}</h6>
                     <p class="text-primary fw-bold">${{ $product->product_price }}</p>
 
-                    <a href="{{ route('productdetails', $product->id) }}" class="btn btn-outline-dark w-100 rounded-pill">View Details</a>
+                    <a href="{{ route('product.details', $product->id) }}" class="btn btn-outline-dark w-100 rounded-pill">View Details</a>
                 </div>
             </div>
         </div>
@@ -120,7 +120,7 @@
     @foreach($collections ?? [] as $product)
    <div class="col-12 col-md-6 col-lg-4">
 
-    <a href="{{ route('productdetails', $product->id) }}" class="text-decoration-none">
+    <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none">
 
         <div class="collection-card position-relative rounded-4 overflow-hidden shadow-sm">
 

@@ -24,7 +24,7 @@
     @endif
 
     {{-- Add Category Form --}}
-    <form action="{{ route('admin.postaddcategory') }}" method="POST">
+    <form action="{{ route('admin.categories.store') }}" method="POST">
         @csrf
 
         <div class="mb-3">
@@ -41,7 +41,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Add Category</button>
-        <a href="{{ route('admin.viewcategory') }}" class="btn btn-secondary px-4">Back</a>
+        <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary px-4">Back</a>
     </form>
 </div>
 @endsection

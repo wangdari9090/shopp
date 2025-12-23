@@ -63,7 +63,7 @@
 
             <!-- login? Link -->
             <p class="mt-3 text-center">
-                Already have an account? <a href="{{ route('show.login') }}">Login</a>
+                Already have an account? <a href="{{ route('login.show') }}">Login</a>
             </p>
         </div>
     </div>

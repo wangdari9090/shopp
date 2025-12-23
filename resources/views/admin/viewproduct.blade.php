@@ -5,7 +5,7 @@
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
 
     <!-- Add Product Button (Right) -->
-    <a href="{{ route('admin.addproduct') }}" class="btn btn-primary ms-5">
+    <a href="{{ route('admin.products.create') }}" class="btn btn-primary ms-5">
         <i class="bi bi-plus-lg me-1"></i> Add Product
     </a>
 
@@ -59,11 +59,11 @@
                 <td>${{ number_format($product->product_price, 2) }}</td>
                 <td>{{ $product->product_quantity }}</td>
                 <td>
-                    <a href="{{ route('admin.updateproduct', $product->id) }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-pencil-square"></i>
                     </a>
 
-                    <a href="{{ route('admin.deleteproduct', $product->id) }}"
+                    <a href="{{ route('admin.products.delete', $product->id) }}"
                        onclick="return confirm('Delete this?');"
                        class="btn btn-sm btn-danger">
                         <i class="bi bi-trash"></i>

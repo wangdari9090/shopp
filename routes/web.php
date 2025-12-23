@@ -11,11 +11,12 @@ use App\Http\Controllers\UserDashboardController;
 | Public Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/', [UserController::class, 'index'])->name('index');
+
+Route::get('/', [UserController::class, 'home'])->name('home');
 Route::get('/contact', [UserController::class, 'contact'])->name('contact');
 Route::get('/product_details/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/category/{id}/products', [UserController::class, 'categoryProducts'])->name('category.products');
-
+    
 /*
 |--------------------------------------------------------------------------
 | Auth Routes
@@ -38,11 +39,11 @@ Route::post('/logout', [AuthController::class, 'logout'])
 */
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', [UserDashboardController::class, 'index'])
+    Route::get('/dashboard', [UserController::class, 'dashboard'])
         ->name('user.dashboard');
 
     Route::post('/add_to_cart/{id}', [UserController::class, 'addToCart'])
-        ->name('cart.add');
+        ->name('add_to_cart');
 
     Route::get('/view_cart', [UserController::class, 'viewCart'])
         ->name('cart.view');
