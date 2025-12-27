@@ -1,6 +1,6 @@
-@extends('masterdesign')
+@extends('layouts.usermain')
 
-@section('view_cart')
+@section('content')
 
    <h3 class="fw-bold mb-5 d-flex justify-content-center">
     <i class="bi bi-cart-check-fill me-2 text-primary"></i>
@@ -21,7 +21,7 @@
         <div class="text-center py-5">
             <i class="bi bi-cart-x display-1 text-muted"></i>
             <h4 class="mt-3">Your cart is empty</h4>
-            <a href="{{ route('home') }}" class="btn btn-primary mt-3">Start Shopping</a>
+            <a href="{{ route('index') }}" class="btn btn-primary mt-3">Start Shopping</a>
         </div>
     @else
 

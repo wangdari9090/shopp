@@ -8,13 +8,13 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4>Update Product</h4>
-        <a href="{{ route('admin.viewproduct') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Back</a>
     </div>
 
     <div class="card shadow">
         <div class="card-body">
 
-            <form action="{{ route('admin.updateproduct.post', $product->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.categories.update', $category->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <!-- Title -->

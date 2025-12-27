@@ -9,10 +9,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
+    
+    @vite('resources/css/app.css', 'resources/js/app.js')
     <!-- custom CSS -->
-    <link href="{{ asset('css/admin.css') }}" rel="stylesheet">
-    @stack('styles')
+    {{-- <link href="{{ asset('css/admin.css') }}" rel="stylesheet"> --}}
+    {{-- @stack('styles') --}}
 </head>
 <body>
 <div class="d-flex">
@@ -20,7 +21,7 @@
 
     @include('admin.sidebar')
     <!-- Main content -->
-    <div class="flex-grow-1 p-4">
+    {{-- <div class="flex-grow-1 p-4">
         <h2>@yield('page-title', 'Dashboard')</h2>
         <hr>
         @yield('dashboard')
@@ -31,7 +32,7 @@
         @yield('view_product')
         @yield('update_product')
         @yield('view_orders')
-    </div>
+    </div> --}}
 </div>
 <!-- Footer -->
 {{-- <footer class="text-center text-white fixed-bottom bg-dark py-3 align-items-center p-4 mt-5">

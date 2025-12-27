@@ -35,7 +35,7 @@ class AuthController extends Controller
 
     Auth::login($user);
 
-    return redirect()->route('home');
+    return redirect()->route('index');
     }
     public function login(Request $request)
     {
@@ -51,7 +51,7 @@ class AuthController extends Controller
             return redirect()->route(
                 Auth::user()->user_type === 'admin'
                     ? 'admin.dashboard'
-                    : 'home'
+                    : 'index'
             );
         }
 
@@ -80,6 +80,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return redirect()->route('index');
     }
 }

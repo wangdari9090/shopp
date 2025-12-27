@@ -1,6 +1,6 @@
-@extends('admin.maindesign')
+@extends('layouts.admin_main')
 
-@section('view_orders')
+@section('content')
 <div class="container-fluid">
 
     <h3 class="mb-4 fw-bold">All Orders</h3>

@@ -18,7 +18,8 @@ return new class extends Migration
         $table->text('product_description');
         $table->integer('product_quantity');
         $table->decimal('product_price', 10, 2);
-        $table->string('product_image')->nullable();
+        $table->text('product_image');
+        $table->boolean('is_popular')->default(false);
         $table->foreignId('category_id')
               ->nullable()
               ->constrained('categories')

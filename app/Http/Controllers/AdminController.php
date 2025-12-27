@@ -88,27 +88,30 @@ class AdminController extends Controller
             'product_quantity' => 'required|integer',
             'product_price' => 'required|numeric',
             'category_id' => 'required|exists:categories,id',
-            'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'product_image' => 'required|array',
+            'product_image.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 
-        $product = new Product();
-        $product->product_title = $request->product_title;
-        $product->product_description = $request->product_description;
-        $product->product_quantity = $request->product_quantity;
-        $product->product_price = $request->product_price;
-        $product->category_id = $request->category_id;
-
-        if ($request->hasFile('product_image')) {
-            $image = $request->file('product_image');
-            $imageName = time() . '.' . $image->extension();
-            $image->storeAs('products', $imageName, 'public');
-            $product->product_image = $imageName;
+     $imageNames = [];
+    if ($request->hasFile('product_image')) {
+        foreach ($request->file('product_image') as $file) {
+            $name = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('products', $name, 'public');
+            $imageNames[] = $name;
         }
-
-        $product->save();
-
-        return redirect()->back()->with('success', 'Product added successfully!');
     }
+
+    Product::create([
+        'product_title' => $request->product_title,
+        'product_description' => $request->product_description,
+        'product_quantity' => $request->product_quantity,
+        'product_price' => $request->product_price,
+        'product_image' => $imageNames, // Save the array here
+        'category_id' => $request->category_id,
+    ]);
+
+    return redirect()->back()->with('success', 'Product and Gallery added!');
+}
 
     public function viewProduct(Category $category){
         $products = Product::with('category')->paginate(4);

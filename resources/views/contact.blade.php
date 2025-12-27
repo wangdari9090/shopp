@@ -1,6 +1,6 @@
-@extends('masterdesign')
+@extends('layouts.usermain')
 
-@section('contact')
+@section('content')
 <div class="container my-5">
     <h2 class="fw-bold text-center mb-4">Contact Us</h2>
     <p class="text-center mb-5 text-muted">We’d love to hear from you. Please fill out the form below.</p>

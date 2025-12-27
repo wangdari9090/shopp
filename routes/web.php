@@ -6,13 +6,12 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserDashboardController;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes
-|--------------------------------------------------------------------------
-*/
+// Route::get('/', function () {
+//     return 'OK';
+// });
 
-Route::get('/', [UserController::class, 'home'])->name('home');
+
+Route::get('/', [UserController::class, 'index'])->name('index');
 Route::get('/contact', [UserController::class, 'contact'])->name('contact');
 Route::get('/product_details/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/category/{id}/products', [UserController::class, 'categoryProducts'])->name('category.products');

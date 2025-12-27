@@ -8,21 +8,39 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductCart;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        if(Auth::check() && Auth::user()->user_type == 'user'){
-            return view('index');
-        }
-        else if(Auth::check() && Auth::user()->user_type == 'admin'){
 
-            return view('admin.dashboard');
-        }
+ public function index()
+{
+    if (Auth::check() && Auth::user()->user_type === 'admin') {
+        return redirect()->route('admin.dashboard');
     }
+
+    $count = Auth::check()
+        ? ProductCart::where('user_id', Auth::id())->count()
+        : 0;
+
+    $products = Product::latest()->take(8)->get();
+    $collections = Product::inRandomOrder()->take(6)->get();
+    $popularProducts = DB::table('products')
+    ->select('products.id', 'products.product_title', 'products.product_price', 'products.product_image', DB::raw('COUNT(orders.id) as orders_count'))
+    ->join('orders', 'products.id', '=', 'orders.product_id')
+    ->groupBy('products.id', 'products.product_title', 'products.product_price', 'products.product_image')
+    ->orderByDesc('orders_count')
+    ->limit(4)
+    ->get();
+    $newArrivals = Product::where('created_at', '>=', now()->subDays(7))->paginate(8);
+        
+    $categories = Category::all();
+
+    return view('index', compact('products', 'collections', 'count', 'categories', 'popularProducts', 'newArrivals'));
+}
+
     public function dashboard()
     {
         $categoriesCount = Category::count();
@@ -53,20 +71,20 @@ class UserController extends Controller
         }
         return view('contact', compact('count'));
     }
-    public function home(){
-        if(Auth::check() && Auth::user()->user_type == 'user'){
-        $count = ProductCart::where('user_id', Auth::id())->count();
-        }
-        else{
-            $count ="0";
-        }
-        $products = Product::latest()->take(8)->get();
-        $collections = Product::inRandomOrder()
-        ->take(6)
-        ->get();
-        $categories = Category::all();
-        return view('index',compact('products', 'collections', 'count'));
-    }
+    // public function home(){
+    //     if(Auth::check() && Auth::user()->user_type == 'user'){
+    //     $count = ProductCart::where('user_id', Auth::id())->count();
+    //     }
+    //     else{
+    //         $count ="0";
+    //     }
+    //     $products = Product::latest()->take(8)->get();
+    //     $collections = Product::inRandomOrder()
+    //     ->take(6)
+    //     ->get();
+    //     $categories = Category::all();
+    //     return view('index',compact('products', 'collections', 'count'));
+    // }
 
     public function categoryProducts($id)
     {
@@ -156,6 +174,11 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'Order Confirmed');
     }
 
-
+// User Profile
+public function showProfile()
+{
+    // Auth::user() provides the currently logged in user's data
+    return view('user.profile'); 
+}
 
 }

@@ -1,10 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* 1. Use the ~ for node_modules */
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
 
-@import "./profile/profile.css";
-@import "./home.css";
-@import "./admin/admin.css";
+     
 @import "./master.css";
-@import "./hero.css";
-
+@import "./user.css";        
+@import "./index.css";        

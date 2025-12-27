@@ -1,6 +1,6 @@
-@extends('masterdesign')
+@extends('layouts.usermain')
 
-@section('category_products')
+@section('content')
 <div class="container my-5">
     <h2 class="fw-bold mb-4 text-center">{{ $category->category }}</h2>
 

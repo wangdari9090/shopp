@@ -1,0 +1,29 @@
+   body { background: red !important; }
+   :root {
+        --forest: #0d3b26;
+        --gold: #c5a059;
+        --emerald: #198754;
+    }
+    .login-card {
+        border: none;
+        border-top: 4px solid var(--gold); /* Luxury top border */
+        border-radius: 8px;
+    }
+    .btn-luxury {
+        background-color: var(--forest);
+        color: white;
+        border: none;
+        letter-spacing: 1px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+    .btn-luxury:hover {
+        background-color: #08291a;
+        color: var(--gold);
+    }
+    .form-control:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 0.25 cold-rgba(197, 160, 89, 0.25);
+    }
+    .login-link { color: var(--emerald); text-decoration: none; font-weight: 600; }
+    .login-link:hover { color: var(--gold); }
