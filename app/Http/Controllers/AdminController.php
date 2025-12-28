@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Category;
@@ -11,9 +12,25 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
-    public function dashboard(){
-        return view('admin.dashboard');
-    }
+public function dashboard() {
+    $totalProducts = Product::count();
+    $totalMembers = User::where('user_type', 'user')->count(); 
+    $totalOrders = Order::count();
+    $monthlyRevenue = Order::whereIn('status', ['delivered', 'confirmed'])
+                           ->whereMonth('created_at', now()->month)
+                           ->sum('total_price');
+   $recentOrders = Order::with('user')
+                        ->latest()
+                        ->paginate(5);
+
+    return view('admin.dashboard', compact(
+        'totalProducts', 
+        'totalMembers', 
+        'totalOrders', 
+        'monthlyRevenue',
+        'recentOrders'
+    ));
+}
     public function addCategory(){
         $categories = Category::all();
         return view("admin.addcategory", compact('categories'));
@@ -118,27 +135,24 @@ class AdminController extends Controller
         return view('admin.viewproduct',compact('products'));
     }
 
-    public function deleteProduct($id)
-    {
+public function deleteProduct($id)
+{
     $product = Product::findOrFail($id);
+    if ($product->product_image) {
+        $images = is_array($product->product_image) ? $product->product_image : json_decode($product->product_image, true);
 
-    $files = Storage::disk('public')->files('products');
-
-    $usedImages = Product::pluck('product_image')->toArray();
-
-    foreach ($files as $file) {
-        if (!in_array(basename($file), $usedImages)) {
-            Storage::disk('public')->delete($file);
+        if (!empty($images)) {
+            foreach ($images as $filename) {
+                $path = 'products/' . $filename;
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
         }
     }
-
-    if ($product->product_image && Storage::disk('public')->exists('products/'.$product->product_image)) {
-        Storage::disk('public')->delete('products/'.$product->product_image);
-    }
-
     $product->delete();
 
-    return redirect()->back()->with('success', 'Product deleted successfully');
+    return redirect()->back()->with('success', 'Product and all its images removed.');
 }
 
     public function updateProduct($id)
@@ -149,58 +163,65 @@ class AdminController extends Controller
         return view('admin.updateproduct', compact('product', 'categories'));
     }
 
-    public function postUpdateProduct(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
-        $request->validate([
-            'product_title' => 'required|string',
-            'product_price' => 'required|numeric',
-            'product_quantity' => 'required|integer',
-            'product_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+public function postUpdateProduct(Request $request, $id)
+{
+    $product = Product::findOrFail($id);
+    
+    // 1. Get current images
+    $images = $product->product_image ?? [];
 
-
-        $product->product_title = $request->product_title;
-        $product->product_description = $request->product_description;
-        $product->product_quantity = $request->product_quantity;
-        $product->product_price = $request->product_price;
-        if ($request->hasFile('product_image')) {
-
-        if ($product->product_image && Storage::disk('public')->exists('products/'.$product->product_image)) {
-            Storage::disk('public')->delete('products/'.$product->product_image);
+    // 2. Handle Deletions (Removing specific old images)
+    if ($request->has('remove_images')) {
+        foreach ($request->remove_images as $filename) {
+            // Delete file from storage
+            if (Storage::disk('public')->exists('products/' . $filename)) {
+                Storage::disk('public')->delete('products/' . $filename);
+            }
+            // Remove from the array
+            $images = array_diff($images, [$filename]);
         }
-
-        $imageName = uniqid().'_'.$request->file('product_image')->getClientOriginalName();
-        $request->file('product_image')->storeAs('products', $imageName, 'public');
-
-        $product->product_image = $imageName;
-        }
-
-        $product->save();
-
-        return redirect()->back()->with('success', 'Product Updated Successfully!');
     }
+
+    // 3. Handle New Uploads (Adding to the gallery)
+    if ($request->hasFile('product_image')) {
+        foreach ($request->file('product_image') as $file) {
+            $imageName = uniqid() . '_' . $file->getClientOriginalName();
+            $file->storeAs('products', $imageName, 'public');
+            $images[] = $imageName; // Add new filename to the array
+        }
+    }
+
+    // 4. Update Product Details
+    $product->product_title = $request->product_title;
+    $product->product_description = $request->product_description;
+    $product->product_quantity = $request->product_quantity;
+    $product->product_price = $request->product_price;
+    
+    // Save the merged/cleaned array (re-index it to ensure JSON is clean)
+    $product->product_image = array_values($images);
+    $product->save();
+
+    return redirect()->back()->with('success', 'Gallery updated successfully!');
+}
 
     
     public function viewOrders(){
-        $orders = Order::all();
+        $orders = Order::with(['product', 'user'])->latest()->paginate(8);
         return view('admin.vieworder', compact('orders'));
     }
 
-   public function updateOrderStatus(Request $request, $id)
-    {
-        $order = Order::findOrFail($id);
+ public function updateOrderStatus(Request $request, $id)
+{
+    $order = Order::findOrFail($id);
+    $request->validate([
+        'status' => 'required|in:pending,on_the_way,delivered'
+    ]);
 
-        $status = $request->input('status');
-
-        if (in_array($status, ['on_the_way', 'delivered'])) {
-            $order->status = $status;
-            $order->save();
-
-            return redirect()->back()->with('success', "Order status updated to ".ucfirst(str_replace('_',' ',$status)));
-        }
-
-        return redirect()->back()->with('error', 'Invalid status');
-    }
+    $order->status = $request->status;
+    $order->save();
+    
+    $statusName = ucfirst(str_replace('_', ' ', $order->status));
+    return redirect()->back()->with('success', "Voucher status updated to {$statusName}");
+}
 
 }

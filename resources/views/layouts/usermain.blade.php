@@ -27,30 +27,30 @@
                 <li class="nav-item"><a class="nav-link custom-nav-link" href="/contact">Contact</a></li>
             </ul>
 
-            <div class="d-flex align-items-center gap-4">
-                <a href="/cart" class="nav-icon-themed position-relative">
-                    <i class="bi bi-cart3"></i>
-                    {{-- <span class="cart-badge-dot"></span> --}}
-                </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ route('cart.index') }}" class="position-relative d-inline-block text-dark text-decoration-none mx-3">
+    <i class="bi bi-cart serif fs-4"></i> @if($globalCartCount > 0)
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+              style="font-size: 0.6rem; padding: 0.35em 0.65em;">
+            {{ $globalCartCount }}
+        </span>
+    @endif
+</a>
 
                 @auth
-                <div class="dropdown">
-                    <a href="#" class="nav-icon-themed dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-person"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3">
-                        <li><a class="dropdown-item py-2 fw-bold" href="">My Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
+                    {{-- Show User Name --}}
+                    <span class="fw-semibold text-dark small border-end pe-3 d-none d-md-inline">
+                        Hi, {{ Auth::user()->name }}
+                    </span>
+
+                    {{-- Direct Logout Button --}}
+                    <form action="{{ route('logout') }}" method="POST" class="m-0">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">LOGOUT
+                        </button>
+                    </form>
                 @else
-                <a href="{{ route('login.show') }}" class="btn btn-nav-theme">Login</a>
+                    <a href="{{ route('login.show') }}" class="btn btn-nav-theme px-4 rounded-pill fw-bold">Login</a>
                 @endauth
             </div>
         </div>

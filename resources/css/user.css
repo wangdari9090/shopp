@@ -59,16 +59,27 @@
 /*  Nav bar End */
 /* LOGIN Start */
 /* LOGIN Start */
+
 /* Notification Dot for Cart */
-.cart-badge-dot {
-    position: absolute;
-    top: -2px;
-    right: -5px;
-    width: 8px;
-    height: 8px;
-    background-color: var(--gold);
-    border-radius: 50%;
-    border: 2px solid #fff;
+.cart-badge {
+    font-size: 0.65rem; 
+    padding: 0.35em 0.5em;
+    min-width: 1.6em;
+    height: 1.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+@keyframes badgePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.cart-badge {
+    animation: badgePulse 0.3s ease-out;
 }
 
 /* Login Button to match Theme */
@@ -138,32 +149,105 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-.hero-grid { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; 
-}
+    .hero-grid {
+        padding: 10px;
+    }
 
-.hero-item {
-    background: #fff;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: 0.3s ease;
-    border-left: 4px solid var(--emerald);
-}
+    /* Main Card Container */
+    .hero-item-luxury {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid #f0f0f0;
+    }
 
-.hero-item:hover { 
-    transform: scale(1.02); 
-    background: #f8fcf9; 
-}
+    .hero-item-luxury:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+        border-color: #198754; /* Forest Green highlight on hover */
+    }
 
-.img-ratio { 
-    width: 80px; 
-    height: 80px; 
-    flex-shrink: 0; 
-}
+    /* Image Styling */
+    .product-img-box {
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+        background: #fdfdfd;
+    }
+
+    .product-img-zoom {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .hero-item-luxury:hover .product-img-zoom {
+        transform: scale(1.1);
+    }
+    .product-action-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .hero-item-luxury:hover .product-action-overlay {
+        opacity: 1;
+    }
+
+    .btn-discover {
+        background: #fff;
+        color: #1a1a1a;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Badge */
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #198754;
+        color: #fff;
+        font-size: 10px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        z-index: 2;
+        font-weight: bold;
+    }
+
+    /* Typography */
+    .product-details-minimal {
+        padding: 15px;
+    }
+
+    .product-title-luxury {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #111;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-price-luxury {
+        color: #198754;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
 /* End Hero section */
 
 /* Exclusive Selection */
@@ -332,7 +416,7 @@
 }
 
 .section-title-luxury {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Montserrat', sans-serif;
     font-weight: 900;
     color: var(--forest);
     letter-spacing: -1px;
@@ -453,3 +537,6 @@
 .product-arrival-card-carousel:hover .uniform-img-carousel {
     transform: scale(1.08);
 }
+
+/* Ordre view */
+

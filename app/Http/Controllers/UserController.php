@@ -27,13 +27,26 @@ class UserController extends Controller
 
     $products = Product::latest()->take(8)->get();
     $collections = Product::inRandomOrder()->take(6)->get();
-    $popularProducts = DB::table('products')
-    ->select('products.id', 'products.product_title', 'products.product_price', 'products.product_image', DB::raw('COUNT(orders.id) as orders_count'))
-    ->join('orders', 'products.id', '=', 'orders.product_id')
-    ->groupBy('products.id', 'products.product_title', 'products.product_price', 'products.product_image')
+   $popularProducts = DB::table('products')
+    ->join('order_items', 'products.id', '=', 'order_items.product_id')
+    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+    ->select(
+        'products.id',
+        'products.product_title',
+        'products.product_price',
+        'products.product_image',
+        DB::raw('COUNT(order_items.id) as orders_count')
+    )
+    ->groupBy(
+        'products.id',
+        'products.product_title',
+        'products.product_price',
+        'products.product_image'
+    )
     ->orderByDesc('orders_count')
     ->limit(4)
     ->get();
+
     $newArrivals = Product::where('created_at', '>=', now()->subDays(7))->paginate(8);
         
     $categories = Category::all();
@@ -41,26 +54,29 @@ class UserController extends Controller
     return view('index', compact('products', 'collections', 'count', 'categories', 'popularProducts', 'newArrivals'));
 }
 
-    public function dashboard()
-    {
-        $categoriesCount = Category::count();
-        $productsCount   = Product::count();
-        $ordersCount     = Order::count();
-        $usersCount      = User::count();
+   public function dashboard()
+{
+    $categoriesCount = Category::count();
+    $productsCount   = Product::count();
+    $ordersCount     = Order::count();
+    $usersCount      = User::count();
 
-        $categories = Category::all();
-        $products   = Product::with('category')->get();
-        $orders     = Order::with(['user','product'])->get();
-        return view('admin.dashboard', compact(
-            'categoriesCount',
-            'productsCount',
-            'ordersCount',
-            'usersCount',
-            'categories',
-            'products',
-            'orders'
-        ));
-    }
+    $categories = Category::all();
+    $products   = Product::with('category')->get();
+    
+    // CHANGE: Load 'items.product' instead of just 'product'
+    $orders = Order::with(['user', 'items.product'])->latest()->get();
+
+    return view('admin.dashboard', compact(
+        'categoriesCount',
+        'productsCount',
+        'ordersCount',
+        'usersCount',
+        'categories',
+        'products',
+        'orders'
+    ));
+}
     public function contact()
     {
         if(Auth::check() && Auth::user()->user_type == 'user'){
@@ -95,8 +111,7 @@ class UserController extends Controller
         }
 
         $category = Category::findOrFail($id);
-
-        $products = Product::where('category_id', $id)->get();
+       $products = $category->products;
 
         return view('category_products', compact('category', 'products', 'count'));
     }
@@ -119,59 +134,6 @@ class UserController extends Controller
 
         return view('product_details', compact('product', 'related', 'count'));
 
-    }
-    public function addToCart($id){
-
-    $product = Product::findOrFail($id);
-
-    $product_cart = new ProductCart();
-    $product_cart->user_id = Auth::id();
-    $product_cart->product_id = $product->id;
-
-    $product_cart->save();
-    return redirect()->back()->with('success','Added to Cart');
-
-    }
-    public function viewCart(){
-         if(Auth::check() && Auth::user()->user_type == 'user'){
-            $count = ProductCart::where('user_id', Auth::id())->count();
-            $cart = ProductCart::where('user_id', Auth::id())->get();
-        }
-        else{
-            $count = 0;
-        }
-        return view('viewcart', compact('count', 'cart'));
-    }
-
-    public function removeCartproduct($id){
-        $cart_product = ProductCart::findOrFail($id);
-        $cart_product->delete();
-        return redirect()->back()->with('success','Product Removed from Cart');
-    }
-    public function confirmOrder(Request $request)
-    {
-        $cart_products = ProductCart::where('user_id', Auth::id())->get();
-
-        $address = $request->receiver_address;
-        $phone   = $request->receiver_phone;
-
-        foreach ($cart_products as $cart_product) {
-
-            $order = new Order();
-            $order->receiver_address = $address;
-            $order->receiver_phone   = $phone;
-            $order->user_id          = Auth::id();
-            $order->product_id       = $cart_product->product_id;
-            $order->save();
-        }
-        $carts = ProductCart::where('user_id', Auth::id())->get();
-
-        foreach ($carts as $cart) {
-            $cart_item = ProductCart::findOrFail($cart->id);
-            $cart_item->delete();
-        }
-
-        return redirect()->back()->with('success', 'Order Confirmed');
     }
 
 // User Profile

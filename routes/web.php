@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserDashboardController;
 
 // Route::get('/', function () {
@@ -41,17 +42,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard'])
         ->name('user.dashboard');
 
-    Route::post('/add_to_cart/{id}', [UserController::class, 'addToCart'])
+    Route::post('/add_to_cart/{id}', [OrderController::class, 'addToCart'])
         ->name('add_to_cart');
 
-    Route::get('/view_cart', [UserController::class, 'viewCart'])
-        ->name('cart.view');
+    Route::get('/view_cart', [OrderController::class, 'viewCart'])
+        ->name('cart.index');
 
-    Route::delete('/remove_cart_product/{id}', [UserController::class, 'removeCartproduct'])
-        ->name('cart.remove');
+   Route::delete('/remove_cart_product/{id}', [OrderController::class, 'removeCartproduct'])
+    ->name('cart.remove');
 
-    Route::post('/confirm_order', [UserController::class, 'confirmOrder'])
+    Route::post('/confirm_order', [OrderController::class, 'confirmOrder'])
         ->name('order.confirm');
+
+    Route::post('/cart/increase/{id}', [OrderController::class, 'increaseQuantity'])->name('cart.increase');
+    
+    Route::post('/cart/reduce/{id}', [OrderController::class, 'reduceQuantity'])->name('cart.reduce');
 });
 
 /*
@@ -96,16 +101,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/products/{id}/edit', [AdminController::class, 'updateProduct'])
         ->name('products.edit');
 
-    Route::post('/products/{id}', [AdminController::class, 'postUpdateProduct'])
+    Route::put('/products/{id}', [AdminController::class, 'postUpdateProduct'])
         ->name('products.update');
 
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])
         ->name('products.delete');
+    });
+    
+// Orders
+Route::get('/orders', [AdminController::class, 'viewOrders'])
+    ->name('orders.index');
 
-    // Orders
-    Route::get('/orders', [AdminController::class, 'viewOrders'])
-        ->name('orders.index');
+Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])
+    ->name('orders.updateStatus');
 
-    Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])
-        ->name('orders.updateStatus');
-});
+Route::post('/place-order', [OrderController::class, 'store'])->name('order.place');
+Route::post('/admin/order/update-status/{id}', [AdminController::class, 'updateOrderStatus'])
+->name('admin.updateOrderStatus');

@@ -26,22 +26,45 @@
                 </div>
             </div>
 
-            <div class="col-lg-6">
-                <div class="hero-grid">
-                    @foreach($popularProducts->take(4) as $product)
-                    <div class="hero-item shadow-sm border-start border-success border-4">
-                        <div class="img-ratio">
-                            {{-- Fix: Added [0] --}}
-                            <img src="{{ asset('storage/products/'.($product->product_image[0] ?? 'default.jpg')) }}" class="uniform-img" alt="...">
-                        </div>
-                        <div class="item-info">
-                            <h6 class="fw-bold mb-0 text-truncate">{{ $product->product_title }}</h6>
-                            <span class="text-success fw-bold small">${{ number_format($product->product_price, 2) }}</span>
-                        </div>
+           <div class="col-lg-6">
+            <div class="hero-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+            @foreach($popularProducts->take(4) as $product)
+            <div class="hero-item-luxury">
+                {{-- Product Image Container --}}
+                <div class="product-img-box">
+                    @php
+                        $images = json_decode($product->product_image, true);
+                        $firstImage = $images[0] ?? 'default.jpg';
+                    @endphp
+                    
+                    {{-- Floating Badge --}}
+                    <span class="product-badge">Popular</span>
+
+                    <img src="{{ asset('storage/products/' . $firstImage) }}" 
+                        class="product-img-zoom" 
+                        alt="{{ $product->product_title }}">
+                    
+                    {{-- Hover Action --}}
+                    <div class="product-action-overlay">
+                        <a href="{{ route('product.details', $product->id) }}" class="btn-discover">
+                            View Piece
+                        </a>
                     </div>
-                    @endforeach
                 </div>
+
+        {{-- Product Info --}}
+        <div class="product-details-minimal">
+            <p class="text-muted small mb-1 text-uppercase tracking-wider" style="font-size: 0.65rem;">Timeless Series</p>
+            <h6 class="product-title-luxury">{{ $product->product_title }}</h6>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <span class="product-price-luxury">${{ number_format($product->product_price, 2) }}</span>
+                <i class="bi bi-arrow-right text-success small"></i>
             </div>
+        </div>
+    </div>
+    @endforeach
+</div>
+</div>
         </div>
     </div>
 </section>
@@ -49,65 +72,40 @@
 
 @section('content')
 
-{{-- Carousel --}}
-<section id="best-sellers" class="py-5 bg-light">
+{{-- CATEGORY SECTION --}}
+<section id="categories" class="py-5 category-mist-theme">
     <div class="container">
-        <div class="mb-5 text-center">
-            <h2 class="section-title-luxury mb-0">Best Sellers</h2>
-            <p class="text-success fw-bold small text-uppercase tracking-widest">Most Wanted Timepieces</p>
+        <div class="text-center mb-4">
+            <span class="section-subtitle">Browse by Category</span>
         </div>
-
-        <div class="row g-4">
-            @foreach($products as $product)
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="product-arrival-card-carousel overflow-hidden h-100 shadow-sm border-0">
-                    
-                    {{-- Link wrapped around the image carousel --}}
-                    <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none">
-                        <div id="bestSellerCarousel{{ $product->id }}" 
-                             class="carousel slide carousel-fade" 
-                             data-bs-ride="carousel" 
-                             data-bs-interval="1800">
-
-                            <div class="carousel-inner">
-                                @foreach($product->product_image as $imgIndex => $image)
-                                    <div class="carousel-item {{ $imgIndex === 0 ? 'active' : '' }}">
-                                        <div class="img-wrap justify-content-center">
-                                            <img src="{{ asset('storage/products/'.$image) }}" 
-                                                 class="uniform-img-carousel" 
-                                                 alt="{{ $product->product_title }}">
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
+        
+        <div class="row g-3">
+            @php
+                $categories = [
+                    1 => ['icon' => 'bi-smartwatch', 'name' => 'Smart'],
+                    2 => ['icon' => 'bi-watch', 'name' => 'Luxury'],
+                    3 => ['icon' => 'bi-clock-history', 'name' => 'Auto'],
+                    4 => ['icon' => 'bi-stopwatch', 'name' => 'Chrono'],
+                    5 => ['icon' => 'bi-droplet', 'name' => 'Diver'],
+                    6 => ['icon' => 'bi-compass', 'name' => 'Field']
+                ];
+            @endphp
+            @foreach($categories as $id => $cat)
+            <div class="col-4 col-md-2">
+                <a href="{{ route('category.products', $id) }}" class="text-decoration-none">
+                    <div class="minimal-cat-box">
+                        <div class="cat-icon-inner">
+                            <i class="bi {{ $cat['icon'] }}"></i>
                         </div>
-                    </a>
-
-                    <div class="p-3 text-center border-top bg-white">
-                        {{-- Link wrapped around the title --}}
-                        <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none">
-                            <h6 class="product-name mb-1 text-dark fw-bold">
-                                {{ Str::limit($product->product_title, 20) }}
-                            </h6>
-                        </a>
-
-                        <div class="product-price text-success fw-bold">
-                            ${{ number_format($product->product_price, 2) }}
-                        </div>
-
-                        {{-- Luxury Badge --}}
-                        <div class="mt-2">
-                            <span class="badge bg-light text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold" style="font-size: 0.65rem;">
-                                TOP RATED
-                            </span>
-                        </div>
+                        <span class="cat-label">{{ $cat['name'] }}</span>
                     </div>
-                </div>
+                </a>
             </div>
             @endforeach
         </div>
     </div>
 </section>
+
 <section id="best-sellers" class="py-5 bg-light">
     <div class="container">
         <div class="mb-5 text-center">
@@ -157,41 +155,6 @@
         </div>
     </div>
 </section>
-
-{{-- CATEGORY SECTION --}}
-<section id="categories" class="py-5 category-mist-theme">
-    <div class="container">
-        <div class="text-center mb-4">
-            <span class="section-subtitle">Browse by Category</span>
-        </div>
-        
-        <div class="row g-3">
-            @php
-                $categories = [
-                    1 => ['icon' => 'bi-smartwatch', 'name' => 'Smart'],
-                    2 => ['icon' => 'bi-watch', 'name' => 'Luxury'],
-                    3 => ['icon' => 'bi-clock-history', 'name' => 'Auto'],
-                    4 => ['icon' => 'bi-stopwatch', 'name' => 'Chrono'],
-                    5 => ['icon' => 'bi-droplet', 'name' => 'Diver'],
-                    6 => ['icon' => 'bi-compass', 'name' => 'Field']
-                ];
-            @endphp
-            @foreach($categories as $id => $cat)
-            <div class="col-4 col-md-2">
-                <a href="{{ route('category.products', $id) }}" class="text-decoration-none">
-                    <div class="minimal-cat-box">
-                        <div class="cat-icon-inner">
-                            <i class="bi {{ $cat['icon'] }}"></i>
-                        </div>
-                        <span class="cat-label">{{ $cat['name'] }}</span>
-                    </div>
-                </a>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-{{-- END OF Carousel --}}
 
 {{-- New Arrivals --}}
 <section id="new-arrivals" class="py-5 bg-white">
@@ -252,42 +215,38 @@
     
 </section>
 
-{{-- Exclusive Selection --}}
-<section id="featured" class="py-5" style="background: #fbfbfb;">
+
+{{-- <section id="best-sellers" class="py-5 bg-light">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-black">Featured Products</h2>
-            <p class="text-success fw-bold small text-uppercase">Exclusive Selection</p>
+        <div class="mb-5 text-center">
+            <h2 class="section-title-luxury mb-0">Smart Watches</h2>
+            <p class="text-success fw-bold small text-uppercase tracking-widest">Most Wanted Timepieces</p>
         </div>
 
         <div class="row g-4">
-            @foreach($products ?? [] as $product)
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="product-fancy-card">
-                    <div class="img-wrap">
-                        {{-- Fix: Added [0] --}}
-                        <img src="{{ asset('storage/products/'.($product->product_image[0] ?? 'default.jpg')) }}" 
-                             class="uniform-img img-front" alt="Front View">
-    
-                        @if(isset($product->product_image[1]))
-                        <img src="{{ asset('storage/products/'.$product->product_image[1]) }}" 
-                             class="uniform-img img-back" alt="Back View">
-                        @endif
-                        
-                        <div class="overlay">
-                            <a href="{{ route('product.details', $product->id) }}" class="btn btn-success rounded-pill px-4">View Detail</a>
+            @forelse($products as $product)
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100">
+                        @php
+                            $img = is_array($product->product_image) ? $product->product_image[0] : $product->product_image;
+                        @endphp
+                        <img src="{{ asset('storage/products/'.$img) }}" class="card-img-top">
+                        <div class="card-body">
+                            <h6>{{ $product->product_title }}</h6>
+                            <p class="text-success">${{ number_format($product->product_price, 2) }}</p>
                         </div>
                     </div>
-                    <div class="p-3 text-center">
-                        <h6 class="fw-bold text-dark mb-1">{{ Str::limit($product->product_title, 20) }}</h6>
-                        <div class="text-success fw-black">${{ number_format($product->product_price, 2) }}</div>
-                    </div>
                 </div>
-            </div>
-            @endforeach
+            @empty
+                <div class="col-12 text-center">
+                    <p>No products found in this category.</p>
+                </div>
+            @endforelse
         </div>
     </div>
-</section>
+</section> --}}
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var myCarousel = document.querySelector('#arrivalCarousel');

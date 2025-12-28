@@ -139,7 +139,7 @@ document.getElementById('imageInput').addEventListener('change', function(event)
                     <img src="${e.target.result}" class="rounded shadow-sm border p-1 bg-white" 
                          style="width: 110px; height: 110px; object-fit: cover;">
                     <span class="badge bg-gold position-absolute top-0 start-0 m-1 shadow-sm" 
-                          style="color: var(--forest); border: 1px solid var(--forest);">#${index + 1}</span>
+                          style="color: var(--forest); border: 1px solid var(--forest);">${index + 1}</span>
                 `;
                 previewContainer.appendChild(imgWrapper);
             };

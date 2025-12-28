@@ -59,7 +59,7 @@
         </li>
 
         <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="{{ route('orders.index') }}" class="nav-link">
                 <i class="bi bi-bag-check"></i>
                 <span>Orders</span>
             </a>
@@ -73,8 +73,23 @@
                 <i class="bi bi-list"></i>
             </button>
             <div class="user-profile">
-                <span>Admin</span>
-                <img src="https://ui-avatars.com/api/?name=Admin&background=0d3b26&color=fff" alt="profile">
+                <div class="d-flex align-items-center gap-3">
+                    @auth
+                        {{-- Show User Name --}}
+                        <span class="fw-semibold text-dark small border-end pe-3 d-none d-md-inline">
+                            Hi, {{ Auth::user()->name }}
+                        </span>
+
+                        {{-- Direct Logout Button --}}
+                        <form action="{{ route('logout') }}" method="POST" class="m-0">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">LOGOUT
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login.show') }}" class="btn btn-nav-theme px-4 rounded-pill fw-bold">Login</a>
+                    @endauth
+                </div>
             </div>
         </header>
 
@@ -83,6 +98,6 @@
         </main>
     </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

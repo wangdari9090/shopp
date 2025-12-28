@@ -10,7 +10,7 @@
 body {
     background-color: #f4f7f6;
     margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* 3. Sidebar Base */
@@ -244,4 +244,34 @@ body {
     opacity: 0.9;                  
     transform: translateY(-1px);  
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.luxury-pagination nav div:first-child {
+    display: none !important; 
+}
+
+.luxury-pagination nav div:last-child p {
+    display: none !important;
+}
+.luxury-pagination .pagination {
+    margin-bottom: 0;
+}
+
+.luxury-pagination .page-link {
+    color: var(--forest); 
+    border: 1px solid #f1f1f1;
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    transition: all 0.2s ease;
+}
+
+.luxury-pagination .page-item.active .page-link {
+    background-color: var(--forest) !important;
+    border-color: var(--forest) !important;
+    color: white !important;
+}
+
+.luxury-pagination .page-link:hover {
+    background-color: #f8f9fa;
+    color: var(--gold);
 }

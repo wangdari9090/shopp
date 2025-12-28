@@ -50,6 +50,16 @@
                 <i class="bi bi-basket me-2"></i> Orders
             </a>
         </li>
+        <li class="nav-item mb-1">
+    <a class="nav-link text-white sidebar-link" href="{{ route('admin.orders.index') }}" target="_self">
+        <i class="bi bi-basket me-2"></i> Orders
+    </a>
+</li>
+         <li class="nav-item mb-1">
+            <a class="nav-link text-white sidebar-link" href="{{ route('admin.orders.index') }}">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+        </li>
 
         <!-- Logout -->
         <li class="nav-item mt-3 px-2">

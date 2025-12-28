@@ -3,12 +3,13 @@
 
 <div class="container py-5">
     {{-- Success message --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i><strong>{{ session('success') }}</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+       {{-- @if (session('success'))
+        <div class="alert alert-success border-0 small shadow-sm alert-dismissible fade show" role="alert" id="auto-close-alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close" style="font-size: 0.6rem;"></button>
         </div>
-    @endif
+    @endif --}}
 
     <div class="row g-1">
         
@@ -63,13 +64,10 @@
                     @endif
                 </div>
                 <div class="d-flex align-items-center gap-2 pt-2">
-    {{-- Main Form with Quantity and Add to Cart --}}
     <form action="{{ route('add_to_cart', $product->id) }}" method="POST" class="d-flex align-items-center gap-2">
         @csrf
         
-        {{-- Quantity Selector --}}
         <div class="input-group input-group-sm border rounded" style="width: 110px;">
-    {{-- Added id="minus-btn" --}}
     <button class="btn btn-link text-dark text-decoration-none px-2" type="button" id="minus-btn">
         <i class="bi bi-dash"></i>
     </button>
@@ -79,19 +77,16 @@
            value="1" min="1" max="{{ $product->product_quantity }}" 
            style="box-shadow: none; font-weight: bold;">
     
-    {{-- Added id="plus-btn" --}}
     <button class="btn btn-link text-dark text-decoration-none px-2" type="button" id="plus-btn">
         <i class="bi bi-plus"></i>
     </button>
 </div>
 
-        {{-- Small Add to Cart Button --}}
         <button class="btn btn-success btn-sm fw-bold shadow-sm text-uppercase tracking-wider px-3 py-2">
             <i class="bi bi-cart-plus me-1"></i> Add
         </button>
     </form>
 
-    {{-- Back Button (Matching small size) --}}
     <a href="{{ route('index') }}" class="btn btn-outline-dark btn-sm px-3 py-2 d-flex align-items-center" title="Back to Shop">
         <i class="bi bi-arrow-left"></i>
     </a>
@@ -161,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         minusBtn.addEventListener('click', function (e) {
-            e.preventDefault(); // Prevents any accidental form submission
+            e.preventDefault();
             let currentVal = parseInt(qtyInput.value) || 1;
             
             if (currentVal > 1) {

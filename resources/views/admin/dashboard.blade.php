@@ -4,22 +4,23 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="row g-4 mb-5">
-
+    <div class="row g-4 my-3 px-4">
+        {{-- Total Products --}}
         <div class="col-xl-3 col-md-6">
             <div class="card card-stat shadow-sm p-4">
                 <div class="d-flex align-items-center">
                     <div class="icon-circle bg-soft-gold me-3">
-                        <i class="bi bi-bag-check"></i>
+                        <i class="bi bi-watch"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted small mb-1">Total Orders</h6>
-                        <h4 class="fw-bold mb-0">156</h4>
+                        <h6 class="text-muted small mb-1">Total Products</h6>
+                        <h4 class="fw-bold mb-0">{{ $totalProducts }}</h4>
                     </div>
                 </div>
             </div>
         </div>
 
+        {{-- Member List (Total Users) --}}
         <div class="col-xl-3 col-md-6">
             <div class="card card-stat shadow-sm p-4">
                 <div class="d-flex align-items-center">
@@ -27,27 +28,29 @@
                         <i class="bi bi-people"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted small mb-1">New Clients</h6>
-                        <h4 class="fw-bold mb-0">42</h4>
+                        <h6 class="text-muted small mb-1">Members</h6>
+                        <h4 class="fw-bold mb-0">{{ $totalMembers }}</h4>
                     </div>
                 </div>
             </div>
         </div>
 
+        {{-- Total Orders --}}
         <div class="col-xl-3 col-md-6">
-            <div class="card card-stat shadow-sm p-4 border-start border-danger border-4">
+            <div class="card card-stat shadow-sm p-4 border-start border-success border-4">
                 <div class="d-flex align-items-center">
-                    <div class="icon-circle bg-light text-danger me-3">
-                        <i class="bi bi-exclamation-octagon"></i>
+                    <div class="icon-circle bg-light text-success me-3">
+                        <i class="bi bi-bag-check"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted small mb-1">Low Inventory</h6>
-                        <h4 class="fw-bold mb-0 text-danger">8 Items</h4>
+                        <h6 class="text-muted small mb-1">Total Orders</h6>
+                        <h4 class="fw-bold mb-0">{{ $totalOrders }}</h4>
                     </div>
                 </div>
             </div>
         </div>
         
+        {{-- Monthly Revenue --}}
         <div class="col-xl-3 col-md-6">
             <div class="card card-stat shadow-sm p-4">
                 <div class="d-flex align-items-center">
@@ -56,15 +59,15 @@
                     </div>
                     <div>
                         <h6 class="text-muted small mb-1">Monthly Revenue</h6>
-                        <h4 class="fw-bold mb-0">$24,850.00</h4>
+                        <h4 class="fw-bold mb-0">${{ number_format($monthlyRevenue, 2) }}</h4>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    </div>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
+    <div class="row g-4 px-5">
             <div class="table-container shadow-sm border-0">
                 <div class="p-4 d-flex justify-content-between align-items-center border-bottom">
                     <h5 class="fw-bold m-0" style="color: var(--forest);">Recent Acquisitions</h5>
@@ -82,62 +85,57 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="fw-bold">#WA-9921</td>
-                                <td>Alexander Pierce</td>
-                                <td class="small text-muted">Rolex Datejust 41</td>
-                                <td class="fw-bold text-dark">$9,200</td>
-                                <td><span class="badge-status bg-success-subtle text-success">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold">#WA-9922</td>
-                                <td>Sophia Laurent</td>
-                                <td class="small text-muted">Cartier Santos Large</td>
-                                <td class="fw-bold text-dark">$7,100</td>
-                                <td><span class="badge-status bg-warning-subtle text-warning text-dark">Processing</span></td>
-                            </tr>
-                            <tr>
-                                <td class="fw-bold">#WA-9923</td>
-                                <td>Marcus Aurelius</td>
-                                <td class="small text-muted">Omega Speedmaster</td>
-                                <td class="fw-bold text-dark">$6,400</td>
-                                <td><span class="badge-status bg-info-subtle text-info text-dark">Shipped</span></td>
-                            </tr>
-                        </tbody>
+    @foreach($recentOrders as $order)
+    <tr>
+        <td class="fw-bold">#VO-{{ $order->id }}</td>
+        <td>
+            <div class="fw-bold">{{ $order->user->name }}</div>
+            <small class="text-muted">{{ $order->receiver_phone }}</small>
+        </td>
+        <td class="small text-muted">
+            {{-- Displaying first item name and count if more than one --}}
+            @if($order->items->count() > 0)
+                {{ $order->items->first()->product->product_title }}
+                @if($order->items->count() > 1)
+                    <span class="badge bg-light text-dark">+{{ $order->items->count() - 1 }} more</span>
+                @endif
+            @endif
+        </td>
+        <td class="fw-bold text-dark">${{ number_format($order->total_price, 2) }}</td>
+      <th style="width: 180px;">Status</th> <td style="width: 180px;"> <form action="{{ route('admin.updateOrderStatus', $order->id) }}" method="POST" id="status-form-{{ $order->id }}">
+        @csrf
+        <select name="status" 
+                onchange="this.form.submit()"
+                class="form-select form-select-sm fw-bold border-0 
+                {{ $order->status == 'pending' ? 'bg-warning text-dark' : '' }}
+                {{ $order->status == 'on_the_way' ? 'bg-info text-white' : '' }}
+                {{ $order->status == 'delivered' ? 'bg-success text-white' : '' }}" 
+                style="border-radius: 8px; cursor: pointer; width: 100%;"> <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>⏳ Processing</option>
+            <option value="on_the_way" {{ $order->status == 'on_the_way' ? 'selected' : '' }}>🚚 Shipped</option>
+            <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>✅ Delivered</option>
+        </select>
+    </form>
+</td>
+        {{-- <td class="text-end">
+            <a href="{{ url('admin/view_order_details/'.$order->id) }}" class="btn btn-sm btn-outline-dark" style="border-radius: 8px;">
+                <i class="bi bi-eye"></i> View
+            </a>
+        </td> --}}
+    </tr>
+    @endforeach
+</tbody>
                     </table>
+<div class="d-flex justify-content-between align-items-center p-4 border-top">
+    <div class="small text-muted">
+        Showing {{ $recentOrders->firstItem() }} to {{ $recentOrders->lastItem() }} of {{ $recentOrders->total() }} vouchers
+    </div>
+    
+    <div class="luxury-pagination">
+        {{ $recentOrders->links('pagination::bootstrap-5') }}
+    </div>
+</div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
-                <h5 class="fw-bold mb-4" style="color: var(--forest);">Inventory Alerts</h5>
-                <div class="d-flex align-items-center mb-4">
-                    <div class="flex-shrink-0">
-                        <div class="rounded bg-light p-2" style="width: 50px; height: 50px;">
-                           <i class="bi bi-watch text-muted fs-4"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-0 small fw-bold">Patek Philippe Nautilus</h6>
-                        <small class="text-danger fw-semibold">1 Piece Remaining</small>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center mb-4">
-                    <div class="flex-shrink-0">
-                        <div class="rounded bg-light p-2" style="width: 50px; height: 50px;">
-                           <i class="bi bi-watch text-muted fs-4"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-0 small fw-bold">Audemars Piguet Royal Oak</h6>
-                        <small class="text-warning fw-semibold">2 Pieces Remaining</small>
-                    </div>
-                </div>
-                <hr>
-                <button class="btn btn-outline-dark btn-sm w-100 py-2">Manage All Inventory</button>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -170,7 +168,17 @@
     .bg-soft-forest { background-color: rgba(13, 59, 38, 0.1); color: var(--forest); }
     .bg-soft-gold { background-color: rgba(197, 160, 89, 0.1); color: var(--gold); }
 
-    /* Luxury Table */
+  /* Fix to remove the duplicate "Showing..." text from the Bootstrap template */
+.luxury-pagination nav div:first-child {
+    display: none !important; /* Hides the mobile summary block */
+}
+
+.luxury-pagination nav div:last-child p {
+    display: none !important; /* Hides the desktop summary text next to buttons */
+}
+
+/* Luxury Styling for buttons */
+
     .table-container {
         background: white;
         border-radius: 15px;
@@ -194,8 +202,6 @@
         color: #333;
         border-bottom: 1px solid #f1f1f1;
     }
-
-    /* Badge Styles */
     .badge-status {
         padding: 6px 12px;
         border-radius: 8px;

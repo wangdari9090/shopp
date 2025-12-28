@@ -1,17 +1,4 @@
-:root {
-    --forest: #0d3b26;
-    --gold: #c5a059;
-    --sidebar-width: 260px;
-    --sidebar-collapsed: 70px;
-}
-
-body {
-    background-color: #f4f7f6;
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-}
-
-        :root {
+      :root {
             --forest: #0d3b26;
             --gold: #c5a059;
             --sidebar-width: 260px;
@@ -21,7 +8,7 @@ body {
         body {
             background-color: #f4f7f6;
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Montserrat', sans-serif;
         }
 
         #sidebar {
