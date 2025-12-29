@@ -24,8 +24,8 @@
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav mx-auto gap-lg-4">
                 <li class="nav-item"><a class="nav-link custom-nav-link" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link custom-nav-link" href="/shop">Shop</a></li>
-                <li class="nav-item"><a class="nav-link custom-nav-link" href="/contact">Contact</a></li>
+                <li class="nav-item"><a class="nav-link custom-nav-link" href="#best-seller-section">Shop</a></li>
+                <li class="nav-item"><a class="nav-link custom-nav-link" href="{{route('contact')}}">Contact</a></li>
             </ul>
 
             <div class="d-flex align-items-center gap-3">

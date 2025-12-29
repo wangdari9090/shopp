@@ -20,7 +20,7 @@
                 </p>
 
                 <div class="d-flex gap-3">
-                    <a href="#featured" class="btn shop-now-btn px-5 shadow-lg">
+                    <a href="#best-seller-section" class="btn shop-now-btn px-5 shadow-lg">
                         Shop Now
                     </a>
                 </div>
@@ -124,7 +124,7 @@
             <div id="bestSellerCarousel{{ $product->id }}" 
                  class="carousel slide carousel-fade" 
                  data-bs-ride="carousel" 
-                 data-bs-interval="1800">
+                 data-bs-interval="3000">
 
                 <div class="carousel-inner">
                     @foreach($product->product_image as $imgIndex => $image)
@@ -246,7 +246,7 @@ $(document).ready(function() {
             }
 
             const newCarousel = new bootstrap.Carousel(carouselEl, {
-                interval: 1800,
+                interval: 3000,
                 ride: 'carousel',
                 pause: 'hover'
             });
@@ -273,7 +273,7 @@ $(document).ready(function() {
 
                 if ($("#best-seller-section").length) {
                     $('html, body').animate({
-                        scrollTop: $("#best-seller").offset().top - 70
+                        scrollTop: $("#best-seller-section").offset().top - 70
                     }, 100);
                 }
 

@@ -23,7 +23,7 @@ public function index(Request $request)
 
     $count = Auth::check() ? ProductCart::where('user_id', Auth::id())->count() : 0;
 
-    $products = Product::paginate(4)->fragment('best-sellers');
+    $products = Product::paginate(4)->fragment('best-seller-sections');
 
     if ($request->ajax()) {
         return view('partials.product_list', compact('products'))->render();

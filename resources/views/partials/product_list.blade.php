@@ -3,7 +3,7 @@
     <div class="col-6 col-md-4 col-lg-3">
         <div class="product-arrival-card-carousel overflow-hidden">
             <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none">
-                <div id="bestSellerCarousel{{ $product->id }}" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="1800">
+                <div id="bestSellerCarousel{{ $product->id }}" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
                     <div class="carousel-inner">
                         @foreach($product->product_image as $imgIndex => $image)
                             <div class="carousel-item {{ $imgIndex === 0 ? 'active' : '' }}">

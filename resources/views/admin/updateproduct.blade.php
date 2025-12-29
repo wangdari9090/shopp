@@ -117,15 +117,16 @@
         <hr class="my-4">
 
         {{-- Add New Images --}}
-        <div class="mb-3">
-            <label class="small fw-bold text-muted text-uppercase d-block mb-2">Add New Photos</label>
-            <div class="input-group">
-                <input type="file" name="product_image[]" id="imageInput" class="form-control" multiple>
-            </div>
-            <small class="text-muted mt-2 d-block" style="font-size: 0.75rem;">
-                <i class="bi bi-info-circle me-1"></i> These will be added to your current gallery.
-            </small>
-        </div>
+<div class="mb-3">
+    <label class="small fw-bold text-muted text-uppercase d-block mb-2">Add New Photos</label>
+    <div class="input-group">
+        {{-- Added ID for easier JS targeting --}}
+        <input type="file" name="product_image[]" id="imageInput" class="form-control" multiple accept="image/*">
+    </div>
+</div>
+
+{{-- This container will hold the new previews with their own "X" buttons --}}
+<div id="imagePreview" class="d-flex flex-wrap gap-3 mt-3"></div>
 
         {{-- Preview for newly selected files --}}
         <div id="imagePreview" class="d-flex flex-wrap gap-2 mt-2"></div>
@@ -149,27 +150,66 @@
 </div>
 
 <script>
+let newFilesTracker = new DataTransfer(); // This holds the actual files to be sent to Laravel
+
 document.getElementById('imageInput').addEventListener('change', function(event) {
     const previewContainer = document.getElementById('imagePreview');
-    previewContainer.innerHTML = ''; 
-
     const files = event.target.files;
-    if (files.length > 0) {
-        [...files].forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.classList.add('rounded', 'shadow-sm', 'border', 'p-1', 'bg-white');
-                img.style.width = "70px";
-                img.style.height = "70px";
-                img.style.objectFit = "cover";
-                previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        });
-    }
+
+    // Loop through newly selected files
+    [...files].forEach((file) => {
+        // Prevent adding the same file twice in the tracker
+        newFilesTracker.items.add(file);
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // Create a wrapper for the new image and its delete button
+            const div = document.createElement('div');
+            div.className = "position-relative new-image-wrapper";
+            div.setAttribute('data-name', file.name); // Store name to find it later
+
+            div.innerHTML = `
+                <img src="${e.target.result}" 
+                     class="rounded border p-1 bg-white shadow-sm" 
+                     style="width: 85px; height: 85px; object-fit: cover; border: 2px dashed #198754 !important;">
+                <button type="button" 
+                        onclick="removeNewlySelected(this, '${file.name}')"
+                        class="btn btn-dark btn-sm position-absolute top-0 end-0 m-1 p-0 d-flex align-items-center justify-content-center shadow"
+                        style="width: 22px; height: 22px; border-radius: 50%; border: 1px solid white; background: #000;">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            previewContainer.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Sync the hidden file input with our tracker
+    this.files = newFilesTracker.files;
 });
+
+// Function to remove a file from the NEWLY selected list before submit
+function removeNewlySelected(btn, fileName) {
+    const updatedTracker = new DataTransfer();
+    const input = document.getElementById('imageInput');
+
+    // Filter out the file we want to remove
+    for (let i = 0; i < newFilesTracker.files.length; i++) {
+        const file = newFilesTracker.files[i];
+        if (file.name !== fileName) {
+            updatedTracker.items.add(file);
+        }
+    }
+
+    // Update the tracker and the input
+    newFilesTracker = updatedTracker;
+    input.files = newFilesTracker.files;
+
+    // Remove the visual preview
+    btn.closest('.new-image-wrapper').remove();
+}
+
+// Keep your existing markForDeletion for OLD images
 function markForDeletion(btn, inputId) {
     const checkbox = document.getElementById(inputId);
     const imgWrapper = btn.parentElement;
@@ -188,28 +228,6 @@ function markForDeletion(btn, inputId) {
         btn.classList.replace('btn-warning', 'btn-danger');
     }
 }
-
-document.getElementById('imageInput').addEventListener('change', function(event) {
-    const previewContainer = document.getElementById('imagePreview');
-    previewContainer.innerHTML = ''; 
-    const files = event.target.files;
-    if (files.length > 0) {
-        [...files].forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.classList.add('rounded', 'border', 'p-1', 'bg-white', 'shadow-sm');
-                img.style.width = "60px";
-                img.style.height = "60px";
-                img.style.objectFit = "cover";
-                img.style.border = "2px dashed #198754";
-                previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-});
 </script>
 
 <style>

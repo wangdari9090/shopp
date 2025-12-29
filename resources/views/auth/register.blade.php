@@ -24,7 +24,7 @@
                     <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
                            id="name" value="{{ old('name') }}" placeholder="John Doe" autofocus>
                      <div class="invalid-feedback d-block" style="min-height: 20px;">
-                        @error('email') {{ $message }} @enderror
+                        @error('name') {{ $message }} @enderror
                     </div>
                 </div>
 
