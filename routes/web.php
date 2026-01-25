@@ -38,7 +38,7 @@ Route::post('/register-validate', [UserController::class, 'validateForm'])->name
 | User Routes (Authenticated Users)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'prevent.direct'])->group(function () {
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])
         ->name('user.dashboard');
@@ -119,3 +119,4 @@ Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'
 Route::post('/place-order', [OrderController::class, 'store'])->name('order.place');
 Route::post('/admin/order/update-status/{id}', [AdminController::class, 'updateOrderStatus'])
 ->name('admin.updateOrderStatus');
+

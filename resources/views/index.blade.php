@@ -92,7 +92,7 @@
             @endphp
             @foreach($categories as $id => $cat)
             <div class="col-4 col-md-2">
-                <a href="{{ route('category.products', $id) }}" class="text-decoration-none">
+                <a href="{{ route('category.products', $id) }}" class="text-decoration-none ajax-link">
                     <div class="minimal-cat-box">
                         <div class="cat-icon-inner">
                             <i class="bi {{ $cat['icon'] }}"></i>
@@ -236,68 +236,70 @@
 <script>
 $(document).ready(function() {
     
+    // 1. Function to re-initialize carousels after AJAX content loads
     function initializeCarousels() {
         const carousels = document.querySelectorAll('.carousel');
-        
         carousels.forEach(carouselEl => {
             const existingInstance = bootstrap.Carousel.getInstance(carouselEl);
-            if (existingInstance) {
-                existingInstance.dispose();
-            }
+            if (existingInstance) existingInstance.dispose();
 
             const newCarousel = new bootstrap.Carousel(carouselEl, {
                 interval: 3000,
                 ride: 'carousel',
                 pause: 'hover'
             });
-            
             newCarousel.cycle(); 
         });
     }
 
+    // Initial run on page load
     initializeCarousels();
 
-    $(document).on('click', '.luxury-pagination a', function(event) {
+    $(document).on('click', '.luxury-pagination a, .ajax-link', function(event) {
         event.preventDefault();
         
         let url = $(this).attr('href');
+        if (!url || url === '#' || url.includes('logout')) return;
 
         $.ajax({
             url: url,
             type: "GET",
             beforeSend: function() {
+                // Visual feedback that something is happening
                 $('#product-data-container').animate({ opacity: 0.4 }, 200);
             },
             success: function(data) {
+                // UPDATE THE URL in the browser address bar
+                window.history.pushState({ path: url }, '', url);
+
+                // INJECT the new content
                 $('#product-data-container').html(data).animate({ opacity: 1 }, 200);
 
-                if ($("#best-seller-section").length) {
+                // SCROLL to the top of the content area
+                if ($("#categories").length) {
                     $('html, body').animate({
-                        scrollTop: $("#best-seller-section").offset().top - 70
+                        scrollTop: $("#categories").offset().top - 70
                     }, 100);
                 }
 
-                setTimeout(function() {
-                    initializeCarousels();
-                }, 150); 
+                // RE-INITIALIZE carousels for the new items
+                setTimeout(initializeCarousels, 150); 
             },
             error: function() {
                 $('#product-data-container').css('opacity', '1');
-                alert('Products could not be loaded.');
+                // Fallback: If AJAX fails, just go to the link normally
+                window.location.href = url;
             }
         });
     });
+
+    // 3. Handle the "Back" and "Forward" buttons of the browser
+    window.onpopstate = function() {
+        // Simple fix: reload the page to match the URL the user went back to
+        location.reload();
+    };
 });
+
 </script>
 @endsection
 
-{{-- document.addEventListener('DOMContentLoaded', function() {
-        var myCarousel = document.querySelector('#arrivalCarousel');
-        if (myCarousel) {
-            new bootstrap.Carousel(myCarousel, {
-                interval: 3000,
-                ride: 'carousel',
-                pause: 'hover'
-            });
-        }
-    }); --}}

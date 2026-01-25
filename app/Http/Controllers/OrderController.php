@@ -38,6 +38,17 @@ public function addToCart(Request $request, $id)
         ]);
     }
 
+    // Get the new total count for this user
+    $newCount = ProductCart::where('user_id', Auth::id())->sum('quantity');
+
+    // Check if it's an AJAX request
+    if ($request->ajax()) {
+        return response()->json([
+            'success' => true,
+            'newCount' => $newCount
+        ]);
+    }
+
     return redirect()->back()->with('success', 'Selection updated.');
 }
 

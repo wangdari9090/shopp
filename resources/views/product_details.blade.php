@@ -64,7 +64,7 @@
                     @endif
                 </div>
                 <div class="d-flex align-items-center gap-2 pt-2">
-    <form action="{{ route('add_to_cart', $product->id) }}" method="POST" class="d-flex align-items-center gap-2">
+    <form id="addToCartForm" action="{{ route('add_to_cart', $product->id) }}" method="POST" class="d-flex align-items-center gap-2">
         @csrf
         
         <div class="input-group input-group-sm border rounded" style="width: 110px;">
@@ -82,9 +82,9 @@
     </button>
 </div>
 
-        <button class="btn btn-success btn-sm fw-bold shadow-sm text-uppercase tracking-wider px-3 py-2">
-            <i class="bi bi-cart-plus me-1"></i> Add
-        </button>
+       <button type="submit" class="btn btn-success btn-sm fw-bold shadow-sm text-uppercase tracking-wider px-3 py-2">
+        <i class="bi bi-cart-plus me-1"></i> Add
+    </button>
     </form>
 
     <a href="{{ route('index') }}" class="btn btn-outline-dark btn-sm px-3 py-2 d-flex align-items-center" title="Back to Shop">
@@ -120,24 +120,67 @@
     </div>
 </div>
 
-
-{{-- Scripts --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-function changeMainImage(imagePath, element) {
-    const mainImage = document.getElementById('mainProductImage');
-    mainImage.style.opacity = '0';
-    
-    setTimeout(() => {
-        mainImage.src = imagePath;
-        mainImage.style.opacity = '1';
-    }, 150);
+$(document).ready(function() {
+    $('#addToCartForm').on('submit', function(e) {
+        e.preventDefault(); 
 
-    document.querySelectorAll('.thumb-box').forEach(box => {
-        box.classList.remove('border-success');
+        let form = $(this);
+        let actionUrl = form.attr('action');
+        let badge = $('#cart-count');
+
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: form.serialize(),
+            dataType: 'json',
+            success: function(response) {
+                if(response.success) {
+                    // 1. Force the text to change to the new number from the server
+                    badge.text(response.newCount);
+                    
+                    // 2. Make it visible (in case it was hidden)
+                    badge.css('display', 'inline-block');
+
+                    // 3. Animation feedback
+                    badge.animate({fontSize: '0.9rem'}, 100)
+                         .animate({fontSize: '0.6rem'}, 100);
+                }
+            },
+            error: function(xhr) {
+                console.error("Cart Error:", xhr.responseText);
+            }
+        });
     });
+});
 
-    element.classList.add('border-success');
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const plusBtn = document.getElementById('plus-btn');
+    const minusBtn = document.getElementById('minus-btn');
+    const qtyInput = document.getElementById('product-qty');
+
+    if (plusBtn && minusBtn && qtyInput) {
+        plusBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            let currentVal = parseInt(qtyInput.value) || 1;
+            let maxVal = parseInt(qtyInput.getAttribute('max')) || 999;
+            
+            if (currentVal < maxVal) {
+                qtyInput.value = currentVal + 1;
+            }
+        });
+
+        minusBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            let currentVal = parseInt(qtyInput.value) || 1;
+            
+            if (currentVal > 1) {
+                qtyInput.value = currentVal - 1;
+            }
+        });
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     const plusBtn = document.getElementById('plus-btn');
@@ -166,5 +209,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
-
 @endsection

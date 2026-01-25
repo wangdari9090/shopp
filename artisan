@@ -2,17 +2,30 @@
 <?php
 
 use Illuminate\Foundation\Application;
-use Symfony\Component\Console\Input\ArgvInput;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 
 define('LARAVEL_START', microtime(true));
 
-// Register the Composer autoloader...
+// 1. Check if the application is in maintenance mode...
+if (file_exists($maintenance = __DIR__.'/storage/framework/maintenance.php')) {
+    require $maintenance;
+}
+
+// 2. Register the Auto Loader...
 require __DIR__.'/vendor/autoload.php';
 
-// Bootstrap Laravel and handle the command...
-/** @var Application $app */
+// 3. Bootstrap Laravel and handle the command...
+/** @var \Illuminate\Foundation\Application $app */
 $app = require_once __DIR__.'/bootstrap/app.php';
 
-$status = $app->handleCommand(new ArgvInput);
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+
+$status = $kernel->handle(
+    $input = new Symfony\Component\Console\Input\ArgvInput,
+    new Symfony\Component\Console\Output\ConsoleOutput
+);
+
+$kernel->terminate($input, $status);
 
 exit($status);

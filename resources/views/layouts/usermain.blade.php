@@ -29,13 +29,12 @@
             </ul>
 
             <div class="d-flex align-items-center gap-3">
-                <a href="{{ route('cart.index') }}" class="position-relative d-inline-block text-dark text-decoration-none mx-3">
-    <i class="bi bi-cart serif fs-4"></i> @if($globalCartCount > 0)
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-              style="font-size: 0.6rem; padding: 0.35em 0.65em;">
-            {{ $globalCartCount }}
-        </span>
-    @endif
+              <a href="{{ route('cart.index') }}" class="position-relative d-inline-block text-dark text-decoration-none mx-3">
+    <i class="bi bi-cart serif fs-4"></i>
+    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+          style="font-size: 0.6rem; padding: 0.35em 0.65em; {{ $globalCartCount > 0 ? '' : 'display: none;' }}">
+        {{ $globalCartCount }}
+    </span>
 </a>
 
                 @auth
@@ -58,7 +57,7 @@
     </div>
 </nav>
 
-    <main>
+    <main id="spa-container">
         @yield('hero')
         @yield('content')
     </main>

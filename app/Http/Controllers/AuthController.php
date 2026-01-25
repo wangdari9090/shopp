@@ -40,7 +40,7 @@ class AuthController extends Controller
     if ($request->ajax() || $request->wantsJson()) {
         return response()->json([
             'success' => true,
-            'redirect' => route('login') // Or wherever you want them to go
+            'redirect' => route('login') 
         ]);
     }
 
@@ -75,6 +75,18 @@ public function login(Request $request)
         return redirect()->intended($redirectUrl);
     }
 
+
+    // Inside login() after Auth::attempt is successful:
+if (Auth::user()->cart_data) {
+    session()->put('cart', Auth::user()->cart_data);
+}
+
+// Inside logout() before Auth::logout():
+if (Auth::check()) {
+    $user = Auth::user();
+    $user->cart_data = session()->get('cart'); // Save current session to DB
+    $user->save();
+}
     // 5. Handle Failed Login for AJAX
     if ($request->ajax()) {
         return response()->json([
@@ -100,13 +112,13 @@ public function login(Request $request)
     /**
      * Handle logout
      */
-    public function logout(Request $request)
-    {
-        Auth::logout();
+public function logout(Request $request)
+{
+    Auth::logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
-        return redirect()->route('index');
-    }
+    return redirect()->route('index');
+}
 }
