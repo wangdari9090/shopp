@@ -87,20 +87,26 @@ public function index(Request $request)
         return view('contact', compact('count'));
     }
 
-    public function categoryProducts($id)
-    {
-        if(Auth::check() && Auth::user()->user_type == 'user'){
-            $count = ProductCart::where('user_id', Auth::id())->count();
-        } else {
-            $count = 0;
-        }
+   public function categoryProducts(Request $request, $id)
+{
+    // 1. Get the data
+    $category = Category::findOrFail($id);
+    $products = $category->products()->paginate(12); // Use pagination for your AJAX script to work!
 
-        $category = Category::findOrFail($id);
-       $products = $category->products;
+    // 2. Prepare the count for the full view
+    $count = (Auth::check() && Auth::user()->user_type == 'user') 
+             ? ProductCart::where('user_id', Auth::id())->sum('quantity') 
+             : 0;
 
-        return view('category_products', compact('category', 'products', 'count'));
+    // 3. THE FIX: Check if the request is AJAX
+    if ($request->ajax()) {
+        // Return only the product grid fragment
+        return view('partials.product_grid_items', compact('products'))->render();
     }
 
+    // Otherwise return the full page
+    return view('category_products', compact('category', 'products', 'count'));
+}
    public function productDetails($id)
     {
         if(Auth::check() && Auth::user()->user_type == 'user'){

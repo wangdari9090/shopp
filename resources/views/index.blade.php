@@ -92,7 +92,7 @@
             @endphp
             @foreach($categories as $id => $cat)
             <div class="col-4 col-md-2">
-                <a href="{{ route('category.products', $id) }}" class="text-decoration-none ajax-link">
+                <a href="{{ route('category.products', $id) }}" class="text-decoration-none ">
                     <div class="minimal-cat-box">
                         <div class="cat-icon-inner">
                             <i class="bi {{ $cat['icon'] }}"></i>
@@ -255,6 +255,8 @@ $(document).ready(function() {
     // Initial run on page load
     initializeCarousels();
 
+    // 2. The Global AJAX Loader
+    // This targets pagination AND any link with the class 'ajax-link'
     $(document).on('click', '.luxury-pagination a, .ajax-link', function(event) {
         event.preventDefault();
         
@@ -299,7 +301,16 @@ $(document).ready(function() {
         location.reload();
     };
 });
-
 </script>
 @endsection
 
+{{-- document.addEventListener('DOMContentLoaded', function() {
+        var myCarousel = document.querySelector('#arrivalCarousel');
+        if (myCarousel) {
+            new bootstrap.Carousel(myCarousel, {
+                interval: 3000,
+                ride: 'carousel',
+                pause: 'hover'
+            });
+        }
+    }); --}}

@@ -137,19 +137,21 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if(response.success) {
-                    // 1. Force the text to change to the new number from the server
                     badge.text(response.newCount);
-                    
-                    // 2. Make it visible (in case it was hidden)
                     badge.css('display', 'inline-block');
-
-                    // 3. Animation feedback
                     badge.animate({fontSize: '0.9rem'}, 100)
                          .animate({fontSize: '0.6rem'}, 100);
                 }
             },
             error: function(xhr) {
-                console.error("Cart Error:", xhr.responseText);
+                // If Laravel middleware blocks the guest, it returns status 401
+                if (xhr.status === 401) {
+                    // Manually redirect the browser to the login page
+                    window.location.href = "{{ route('login.show') }}";
+                } else {
+                    console.error("Error adding to cart:", xhr.responseText);
+                    alert("Something went wrong. Please try again.");
+                }
             }
         });
     });
@@ -182,31 +184,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const plusBtn = document.getElementById('plus-btn');
-    const minusBtn = document.getElementById('minus-btn');
-    const qtyInput = document.getElementById('product-qty');
-
-    if (plusBtn && minusBtn && qtyInput) {
-        plusBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            let currentVal = parseInt(qtyInput.value) || 1;
-            let maxVal = parseInt(qtyInput.getAttribute('max')) || 999;
-            
-            if (currentVal < maxVal) {
-                qtyInput.value = currentVal + 1;
-            }
-        });
-
-        minusBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            let currentVal = parseInt(qtyInput.value) || 1;
-            
-            if (currentVal > 1) {
-                qtyInput.value = currentVal - 1;
-            }
-        });
-    }
-});
 </script>
 @endsection
