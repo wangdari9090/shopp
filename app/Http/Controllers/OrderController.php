@@ -74,18 +74,21 @@ public function addToCart(Request $request, $id)
         return redirect()->route('login');
     }
 
-    public function increaseQuantity($id)
+
+public function increaseQuantity($id)
 {
     $cartItem = ProductCart::findOrFail($id);
     
-    // Check stock before increasing
     if ($cartItem->quantity < $cartItem->product->product_quantity) {
         $cartItem->increment('quantity');
-        return redirect()->back();
+        
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
     }
     
-    return redirect()->back()->with('error', 'Maximum stock reached.');
-    }
+    return redirect()->back();
+}
 
     public function reduceQuantity($id)
     {

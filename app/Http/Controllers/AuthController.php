@@ -48,59 +48,36 @@ class AuthController extends Controller
 }
 public function login(Request $request)
 {
-    // 1. Validate inputs
     $credentials = $request->validate([
         'email' => 'required|email',
         'password' => 'required',
     ]);
 
-    // 2. Attempt Login
-    if (Auth::attempt($credentials, $request->filled('remember'))) {
+    if (Auth::attempt($credentials)) {
         $request->session()->regenerate();
 
-        // 3. Determine redirect path based on user role
-        // Note: Make sure 'role' matches your database column name
-        $redirectUrl = Auth::user()->role === 'admin' 
-                        ? route('admin.dashboard') 
-                        : route('index');
-
-        // 4. Return JSON for AJAX request
         if ($request->ajax()) {
             return response()->json([
-                'success' => true,
-                'redirect' => $redirectUrl
-            ], 200);
+                'success' => true, 
+                'redirect' => route('index') // Change to your dashboard/home
+            ]);
         }
-
-        return redirect()->intended($redirectUrl);
+        return redirect()->intended('/');
     }
 
-
-    // Inside login() after Auth::attempt is successful:
-if (Auth::user()->cart_data) {
-    session()->put('cart', Auth::user()->cart_data);
-}
-
-// Inside logout() before Auth::logout():
-if (Auth::check()) {
-    $user = Auth::user();
-    $user->cart_data = session()->get('cart'); // Save current session to DB
-    $user->save();
-}
-    // 5. Handle Failed Login for AJAX
+    // If login fails
     if ($request->ajax()) {
         return response()->json([
-            'success' => false,
             'errors' => [
-                'email' => ['The provided credentials do not match our records.']
+                'email' => ['These credentials do not match our records.']
             ]
-        ], 422);
+        ], 422); // 422 is the Unprocessable Entity status code
     }
 
-    return back()->withErrors([
-        'email' => 'The provided credentials do not match our records.',
-    ])->onlyInput('email');
+    return back()->withErrors(['email' => 'Invalid credentials.']);
 }
+
+
     public function dashboard()
     {
         // Example: count users for dashboard

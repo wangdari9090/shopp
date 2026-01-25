@@ -234,14 +234,8 @@
 </section>
 
 <script>
-/**
- * Pro SPA Strategy:
- * 1. Use 'livewire:navigated' to run code after wire:navigate swaps pages.
- * 2. Use Event Delegation for AJAX pagination to handle newly injected HTML.
- */
 document.addEventListener('livewire:navigated', () => {
     
-    // Function to re-kick Bootstrap carousels
     const initCarousels = () => {
         document.querySelectorAll('.carousel').forEach(el => {
             bootstrap.Carousel.getOrCreateInstance(el).cycle();
@@ -250,8 +244,6 @@ document.addEventListener('livewire:navigated', () => {
 
     initCarousels();
 
-    // AJAX Pagination using Delegation
-    // This attaches the listener once to the 'document', so it works even after HTML updates
     $(document).off('click', '.luxury-pagination a').on('click', '.luxury-pagination a', function(e) {
         e.preventDefault();
         const url = $(this).attr('href');
@@ -262,7 +254,6 @@ document.addEventListener('livewire:navigated', () => {
         $.ajax({
             url: url,
             type: "GET",
-            beforeSend: () => container.css('opacity', '0.5'),
             success: (data) => {
                 container.html(data).css('opacity', '1');
                 
@@ -271,7 +262,7 @@ document.addEventListener('livewire:navigated', () => {
 
                 // Smooth scroll to top of section
                 const section = document.getElementById('best-seller-section');
-                if (section) window.scrollTo({ top: section.offsetTop - 70, behavior: 'smooth' });
+                if (section) window.scrollTo({ top: section.offsetTop - 90, behavior: 'smooth' });
             },
             error: () => {
                 container.css('opacity', '1');

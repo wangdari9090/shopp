@@ -103,7 +103,7 @@
         @foreach($related as $item)
             <div class="col-6 col-md-4 col-lg-3">
                 <div class="product-arrival-card-carousel overflow-hidden h-100 border rounded-3 transition-all">
-                    <a href="{{ route('product.details', $item->id) }}" class="text-decoration-none">
+                    <a href="{{ route('product.details', $item->id) }}" wire:navigate class="text-decoration-none">
                         <div class="img-wrap p-3" style="aspect-ratio: 1/1; background: #fcfcfc;">
                             <img src="{{ asset('storage/products/' . ($item->product_image[0] ?? 'default.jpg')) }}" 
                                  class="w-100 h-100 object-fit-contain" 

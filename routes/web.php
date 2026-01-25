@@ -38,7 +38,7 @@ Route::post('/register-validate', [UserController::class, 'validateForm'])->name
 | User Routes (Authenticated Users)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'prevent.direct'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [UserController::class, 'dashboard'])
         ->name('user.dashboard');
