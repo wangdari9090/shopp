@@ -32,6 +32,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
+Route::post('/register-validate', [UserController::class, 'validateForm'])->name('register.validate');
 /*
 |--------------------------------------------------------------------------
 | User Routes (Authenticated Users)

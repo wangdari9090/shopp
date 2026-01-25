@@ -1,87 +1,104 @@
 @extends('layouts.usermain')
 
-@push('styles')
-    @vite(['resources/auth/login.css']) 
-@endpush
-
 @section('content')
+<style>
+    /* 1. Reset container to stack items vertically */
+    .input-group-container { 
+        display: flex; 
+        flex-direction: column; 
+    }
+    
+    /* 2. Style error text to sit clearly below the input */
+    .input-error-under {
+        font-size: 0.75rem;
+        color: #dc3545;
+        font-weight: 600;
+        margin-top: 4px; /* Space between input and error */
+        min-height: 18px; /* Prevents card jumping when error appears */
+    }
+
+    /* 3. Standard red border for invalid state */
+    .form-control.is-invalid {
+        border-color: #dc3545 !important;
+        padding-right: 12px !important; /* Reset padding back to normal */
+    }
+
+    .login-card { border: none; border-top: 2px solid var(--gold); border-radius: 8px; }
+    .btn-luxury { background-color: var(--forest); color: white; border: none; font-weight: 600; }
+    .btn-luxury:hover { background-color: #08291a; color: white; }
+</style>
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh; background-color: #f9f9f7;">
     <div class="card shadow-lg login-card" style="width: 400px;">
         <div class="card-body p-4">
             <div class="text-center mb-4">
                 <h3 class="fw-bold" style="color: var(--forest);">Welcome Back</h3>
-                <p class="text-muted small">Enter your credentials to access your collection</p>
             </div>
 
-            <div style="min-height: 50px;">
-                @if(session('error'))
-                    <div class="alert alert-danger py-2 small">
-                        {{ session('error') }}
-                    </div>
-                @endif
-            </div>
-
-            <form action="{{ route('login') }}" method="POST">
+            <form id="loginForm" action="{{ route('login') }}" method="POST">
                 @csrf
-
                 <div class="mb-3">
-                    <label for="email" class="form-label small fw-bold text-uppercase">Email Address</label>
-                    <input type="email" name="email"
-                           class="form-control @error('email') is-invalid @enderror"
-                           id="email" value="{{ old('email') }}" placeholder="name@example.com">
-                    <div class="invalid-feedback d-block" style="min-height: 20px;">
-                        @error('email') {{ $message }} @enderror
+                    <label class="form-label small fw-bold">EMAIL</label>
+                    <div class="input-group-container">
+                        <input type="email" name="email" class="form-control" id="email" autofocus>
+                        <div id="emailError" class="input-error-under"></div>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label for="password" class="form-label small fw-bold text-uppercase">Password</label>
-                    <input type="password" name="password"
-                           class="form-control @error('password') is-invalid @enderror"
-                           id="password">
-                    <div class="invalid-feedback d-block" style="min-height: 20px;">
-                        @error('password') {{ $message }} @enderror
+                    <label class="form-label small fw-bold">PASSWORD</label>
+                    <div class="input-group-container">
+                        <input type="password" name="password" class="form-control" id="password">
+                        <div id="passwordError" class="input-error-under"></div>
                     </div>
                 </div>
 
                 <button type="submit" class="btn btn-luxury w-100 py-2">SIGN IN</button>
             </form>
 
-            <p class="mt-4 text-center small text-muted">
-                New to the gallery? <a href="{{ route('register') }}" class="login-link">Create Account</a>
+            <p class="mt-4 text-center small">
+                New? <a href="{{ route('register') }}" style="color: var(--forest);">Create Account</a>
             </p>
         </div>
     </div>
 </div>
-<style>
-    .login-card {
-        border: none;
-        border-top: 2px solid var(--gold);
-        border-radius: 8px;
-    }
 
-    .btn-luxury {
-        background-color: var(--forest);
-        color: white;
-        border: none;
-        letter-spacing: 1px;
-        font-weight: 600;
-        transition: 0.3s;
-    }
+<script>
+    // Clear error when user types
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            const err = document.getElementById(this.id + 'Error');
+            if (err) err.innerText = '';
+        });
+    });
 
-    .btn-luxury:hover {
-        background-color: #08291a;
-        color: white;
-    }
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    .form-control:focus {
-        border-color: var(--forest);
-        box-shadow: 0 0 0 0.2rem rgba(13, 59, 38, 0.2);
-        outline: 0;
-    }
-
-     .login-link { color: var(--forest); text-decoration: none; font-weight: 600; }
-    .login-link:hover { color: var(--gold); }
-</style>
+        fetch(this.action, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            },
+            body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else if (data.errors) {
+                Object.keys(data.errors).forEach(key => {
+                    const input = document.getElementById(key);
+                    const errorBox = document.getElementById(key + 'Error');
+                    if (input) input.classList.add('is-invalid');
+                    if (errorBox) errorBox.innerText = data.errors[key][0];
+                });
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
 @endsection

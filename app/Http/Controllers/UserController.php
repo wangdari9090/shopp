@@ -10,6 +10,7 @@ use App\Models\ProductCart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 
 class UserController extends Controller
@@ -85,19 +86,6 @@ public function index(Request $request)
         }
         return view('contact', compact('count'));
     }
-    //     if(Auth::check() && Auth::user()->user_type == 'user'){
-    //     $count = ProductCart::where('user_id', Auth::id())->count();
-    //     }
-    //     else{
-    //         $count ="0";
-    //     }
-    //     $products = Product::latest()->take(8)->get();
-    //     $collections = Product::inRandomOrder()
-    //     ->take(6)
-    //     ->get();
-    //     $categories = Category::all();
-    //     return view('index',compact('products', 'collections', 'count'));
-    // }
 
     public function categoryProducts($id)
     {
@@ -140,4 +128,20 @@ public function showProfile()
     return view('user.profile'); 
 }
 
+// Validate Registration Form via AJAX
+public function validateForm(Request $request)
+{
+    // Use 'sometimes' or just check existing keys
+    $rules = [];
+    if ($request->has('email')) $rules['email'] = 'required|email|unique:users,email';
+    if ($request->has('name'))  $rules['name'] = 'required|min:3';
+
+    $validator = Validator::make($request->all(), $rules);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    return response()->json(['success' => true]);
+}
 }

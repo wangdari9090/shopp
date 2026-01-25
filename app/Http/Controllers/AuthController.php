@@ -19,14 +19,15 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-        $user = User::create([
+   public function register(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
+
+    $user = User::create([
         'name' => $validated['name'],
         'email' => $validated['email'],
         'password' => Hash::make($validated['password']),
@@ -35,33 +36,59 @@ class AuthController extends Controller
 
     Auth::login($user);
 
-    return redirect()->route('index');
-    }
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+    // Check if the request is AJAX
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'redirect' => route('login') // Or wherever you want them to go
         ]);
+    }
 
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
-            $request->session()->regenerate();
+    return redirect()->route('index');
+}
+public function login(Request $request)
+{
+    // 1. Validate inputs
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-            // Redirect based on role
-            return redirect()->route(
-                Auth::user()->user_type === 'admin'
-                    ? 'admin.dashboard'
-                    : 'index'
-            );
+    // 2. Attempt Login
+    if (Auth::attempt($credentials, $request->filled('remember'))) {
+        $request->session()->regenerate();
+
+        // 3. Determine redirect path based on user role
+        // Note: Make sure 'role' matches your database column name
+        $redirectUrl = Auth::user()->role === 'admin' 
+                        ? route('admin.dashboard') 
+                        : route('index');
+
+        // 4. Return JSON for AJAX request
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => $redirectUrl
+            ], 200);
         }
 
-        // If login fails
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        return redirect()->intended($redirectUrl);
     }
 
+    // 5. Handle Failed Login for AJAX
+    if ($request->ajax()) {
+        return response()->json([
+            'success' => false,
+            'errors' => [
+                'email' => ['The provided credentials do not match our records.']
+            ]
+        ], 422);
+    }
 
+    return back()->withErrors([
+        'email' => 'The provided credentials do not match our records.',
+    ])->onlyInput('email');
+}
     public function dashboard()
     {
         // Example: count users for dashboard
