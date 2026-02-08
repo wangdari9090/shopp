@@ -21,167 +21,139 @@
         </div>
     @else
     <div class="row g-4">
-        <div class="col-lg-4">
-            <table class="table align-middle">
-                <thead>
-                    <tr>
-                        <th colspan="2">Description</th>
-                        <th class="text-end">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($cart as $item)
-                    <tr id="row-{{ $item->id }}">
-                        <td style="width: 80px;">
-                            <div class="watch-img-container border">
-                                <img src="{{ asset('storage/products/' . (is_array($item->product->product_image) ? $item->product->product_image[0] : $item->product->product_image)) }}" class="img-fluid" alt="Product">
+    <div class="col-lg-5">
+        <h6 class="serif mb-4 text-uppercase tracking-widest">Your Selection</h6>
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th colspan="2">Description</th>
+                    <th class="text-end">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($cart as $item)
+                <tr id="row-{{ $item->id }}">
+                    <td style="width: 80px;">
+                        <div class="watch-img-container border">
+                            <img src="{{ asset('storage/products/' . (is_array($item->product->product_image) ? $item->product->product_image[0] : $item->product->product_image)) }}" class="img-fluid" alt="Product">
+                        </div>
+                    </td>
+                    <td class="ps-3">
+                        <h6 class="serif mb-1" style="font-size: 0.9rem;">{{ $item->product->product_title }}</h6>
+                        <div class="d-flex align-items-center mt-2">
+                            <div class="d-flex align-items-center border px-1 py-0" style="background: #fdfdfd; scale: 0.8; transform-origin: left;">
+                                <button type="button" onclick="updateQty({{ $item->id }}, 'reduce')" class="btn btn-sm p-1 text-dark border-0 shadow-none"><i class="bi bi-dash"></i></button>
+                                <span class="mx-2 fw-bold small" id="qty-{{ $item->id }}">{{ $item->quantity }}</span>
+                                <button type="button" onclick="updateQty({{ $item->id }}, 'increase')" class="btn btn-sm p-1 text-dark border-0 shadow-none"><i class="bi bi-plus"></i></button>
                             </div>
-                        </td>
-                        <td class="ps-3">
-                            <h6 class="serif mb-1" style="font-size: 0.9rem;">{{ $item->product->product_title }}</h6>
-                            <div class="d-flex align-items-center mt-2">
-                                <div class="d-flex align-items-center border px-1 py-0" style="background: #fdfdfd; scale: 0.8; transform-origin: left;">
-                                    {{-- AJAX Buttons --}}
-                                    <button type="button" onclick="updateQty({{ $item->id }}, 'reduce')" class="btn btn-sm p-1 text-dark border-0 shadow-none"><i class="bi bi-dash"></i></button>
-                                    <span class="mx-2 fw-bold small qty-val" id="qty-{{ $item->id }}">{{ $item->quantity }}</span>
-                                    <button type="button" onclick="updateQty({{ $item->id }}, 'increase')" class="btn btn-sm p-1 text-dark border-0 shadow-none"><i class="bi bi-plus"></i></button>
-                                </div>
-                                <button type="button" onclick="removeItem({{ $item->id }})" class="btn p-0 text-danger ms-2 opacity-50 bg-transparent border-0">
-                                    <i class="bi bi-trash3" style="font-size: 0.8rem;"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="text-end fw-light serif small">
-                            $<span class="item-total" id="total-{{ $item->id }}">{{ number_format($item->product->product_price * $item->quantity, 2) }}</span>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                            <button type="button" onclick="removeItem({{ $item->id }})" class="btn p-0 text-danger ms-2 opacity-50 bg-transparent border-0">
+                                <i class="bi bi-trash3" style="font-size: 0.8rem;"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="text-end fw-light serif small">
+                        $<span id="total-{{ $item->id }}">{{ number_format($item->product->product_price * $item->quantity, 2) }}</span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
-        <div class="col-lg-4">
-            <h6 class="serif mb-4 text-uppercase tracking-widest">Your Order Summary</h6>
-            <div class="summary-container p-4">
-                <div class="border-top pt-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="small text-muted text-uppercase">Subtotal</span>
-                        <span class="small fw-bold">$<span id="subtotal-val">{{ number_format($subtotal, 2) }}</span></span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-end pt-3 border-top mb-4">
-                        <h5 class="serif mb-0 text-uppercase">Total Due</h5>
-                        <h4 class="serif mb-0" style="color: var(--luxury-gold); font-weight: bold;">$<span id="total-due">{{ number_format($subtotal, 2) }}</span></h4>
-                    </div>
-                </div>
+    <div class="col-lg-3 border-start px-lg-4">
+        <h6 class="serif mb-4 text-uppercase tracking-widest">Summary</h6>
+        <div class="summary-container">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="small text-muted text-uppercase">Subtotal</span>
+                <span class="small fw-bold">$<span id="subtotal-val">{{ number_format($subtotal, 2) }}</span></span>
             </div>
-        </div>
-
-        <div class="col-lg-4 border-start border-end px-lg-4">
-            <form action="{{ route('order.confirm') }}" id="order-form" method="POST">
-                @csrf
-                <h6 class="serif mb-4 text-uppercase tracking-widest">Delivery Details</h6>
-                <div class="mb-4 position-relative pb-3">
-                    <label class="small text-muted text-uppercase fw-bold">Contact Number</label>
-                    <input type="text" name="receiver_phone" class="form-control fancy-input shadow-none @error('receiver_phone') is-invalid @enderror" value="{{ old('receiver_phone') }}">
-                </div>
-                <div class="mb-5 position-relative pb-3">
-                    <label class="small text-muted text-uppercase fw-bold">Shipping Address</label>
-                    <textarea name="receiver_address" class="form-control fancy-input shadow-none @error('receiver_address') is-invalid @enderror" rows="3" placeholder="Full Street Address">{{ old('receiver_address') }}</textarea>
-                </div>
-                <button type="submit" class="btn btn-confirm w-100 text-uppercase fw-bold">Confirm Order</button>
-            </form>
+            <div class="d-flex justify-content-between align-items-end pt-3 border-top mt-3 mb-4">
+                <h6 class="serif mb-0 text-uppercase">Total Due</h6>
+                <h5 class="serif mb-0 fw-bold" style="color: #b19470;">$<span id="total-due">{{ number_format($subtotal, 2) }}</span></h5>
+            </div>
+            <p class="small text-muted italic">Shipping calculated at next step.</p>
         </div>
     </div>
+
+    <div class="col-lg-4 border-start px-lg-4">
+        <form action="{{ route('order.confirm') }}" id="order-form" method="POST">
+            @csrf
+            <h6 class="serif mb-4 text-uppercase tracking-widest">Delivery Details</h6>
+            <div class="mb-4 position-relative pb-3">
+                <label class="small text-muted text-uppercase fw-bold">Contact Number</label>
+                <input type="text" name="receiver_phone" class="form-control fancy-input shadow-none @error('receiver_phone') is-invalid @enderror" value="{{ old('receiver_phone') }}">
+                @error('receiver_phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="mb-5 position-relative pb-3">
+                <label class="small text-muted text-uppercase fw-bold">Shipping Address</label>
+                <textarea name="receiver_address" class="form-control fancy-input shadow-none @error('receiver_address') is-invalid @enderror" rows="3" placeholder="Full Street Address">{{ old('receiver_address') }}</textarea>
+                @error('receiver_address') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <button type="submit" class="btn btn-confirm w-100 text-uppercase fw-bold">Confirm Order</button>
+        </form>
+    </div>
+</div>
     @endif
 </div>
-
 <script data-navigate-once>
 document.addEventListener('livewire:navigated', function() {
-    // 1. Image Switcher (no change needed here)
-    window.changeMainImage = function(src, thumb) {
-        const mainImg = document.getElementById('mainProductImage');
-        mainImg.style.opacity = '0';
-        setTimeout(() => {
-            mainImg.src = src;
-            mainImg.style.opacity = '1';
-        }, 300);
-        $('.thumb-box').removeClass('border-success');
-        $(thumb).addClass('border-success');
+
+    window.updateQty = function(id, action) {
+        fetch(`/cart/update/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ action: action })
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (response.ok) {
+                // 1. Update the quantity on screen
+                document.getElementById(`qty-${id}`).innerText = data.newQty;
+                // 2. Update the price for THIS item
+                document.getElementById(`total-${id}`).innerText = data.newItemTotal;
+                // 3. Update the global summary totals
+                document.getElementById('subtotal-val').innerText = data.newSubtotal;
+                document.getElementById('total-due').innerText = data.newSubtotal;
+                document.getElementById('total-count').innerText = data.newCount;
+                
+                // 4. Update navbar badge if it exists
+                const badge = document.getElementById('cart-count');
+                if(badge) badge.innerText = data.newCount;
+            } else {
+                alert(data.message || 'Error updating quantity');
+            }
+        })
+        .catch(error => console.error('Error:', error));
     };
 
-    // 2. AJAX Form Submission
-    const cartForm = document.getElementById('addToCartForm');
-    
-    if (cartForm) {
-        cartForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // CRITICAL: This stops the page reload
+    window.removeItem = function(id) {
+        if(!confirm('Remove this item?')) return;
 
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalContent = submitBtn.innerHTML;
-
-            // Visual feedback: disable button
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest', // Tells Laravel it's an AJAX request
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                }
-            })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = "{{ route('login.show') }}";
-                    return;
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data && data.success) {
-                    // Update the cart badge (ensure your navbar badge has id="cart-count")
-                    const badge = document.getElementById('cart-count');
-                    if (badge) {
-                        badge.innerText = data.newCount;
-                        badge.classList.remove('d-none'); // Show if it was hidden
-                    }
-
-                    // Success animation on button
-                    submitBtn.innerHTML = '<i class="bi bi-check2"></i> ADDED';
-                    submitBtn.classList.replace('btn-success', 'btn-dark');
-
-                    setTimeout(() => {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalContent;
-                        submitBtn.classList.replace('btn-dark', 'btn-success');
-                    }, 2000);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalContent;
-            });
+        fetch(`/cart/remove/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`row-${id}`).remove();
+                document.getElementById('subtotal-val').innerText = data.newSubtotal;
+                document.getElementById('total-due').innerText = data.newSubtotal;
+                document.getElementById('total-count').innerText = data.newCount;
+                
+                if(data.newCount == 0) location.reload(); 
+            }
         });
-    }
-
-    // 3. Qty +/- Buttons (no refresh logic)
-    const qtyInput = document.getElementById('product-qty');
-    const plusBtn = document.getElementById('plus-btn');
-    const minusBtn = document.getElementById('minus-btn');
-
-    if (qtyInput && plusBtn) {
-        plusBtn.onclick = () => {
-            let val = parseInt(qtyInput.value) || 1;
-            if (val < qtyInput.max) qtyInput.value = val + 1;
-        };
-        minusBtn.onclick = () => {
-            let val = parseInt(qtyInput.value) || 1;
-            if (val > 1) qtyInput.value = val - 1;
-        };
-    }
+    };
 });
 </script>
 

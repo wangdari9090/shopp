@@ -34,10 +34,11 @@ class AppServiceProvider extends ServiceProvider
             $cartCount = 0;
         }
         $view->with('globalCartCount', $cartCount);
-    });
-// Clear their previous "stale" cart, when user login in again
-    Event::listen(Login::class, function ($event) {
-            ProductCart::where('user_id', $event->user->id)->delete();
         });
+
+// Clear their previous "stale" cart, when user login in again
+    // Event::listen(Login::class, function ($event) {
+    //         ProductCart::where('user_id', $event->user->id)->delete();
+    //     });
     }
 }

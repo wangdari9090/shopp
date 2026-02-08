@@ -52,14 +52,14 @@ public function login(Request $request)
         'email' => 'required|email',
         'password' => 'required',
     ]);
-
-    if (Auth::attempt($credentials)) {
+    
+    $remember = $request->has('remember');if (Auth::attempt($credentials, $remember)) { 
         $request->session()->regenerate();
 
         if ($request->ajax()) {
             return response()->json([
                 'success' => true, 
-                'redirect' => route('index') // Change to your dashboard/home
+                'redirect' => route('index') 
             ]);
         }
         return redirect()->intended('/');

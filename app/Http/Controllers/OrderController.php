@@ -41,7 +41,6 @@ public function addToCart(Request $request, $id)
     // Get the new total count for this user
     $newCount = ProductCart::where('user_id', Auth::id())->sum('quantity');
 
-    // Check if it's an AJAX request
     if ($request->ajax()) {
         return response()->json([
             'success' => true,
@@ -75,38 +74,67 @@ public function addToCart(Request $request, $id)
     }
 
 
-public function increaseQuantity($id)
-{
-    $cartItem = ProductCart::findOrFail($id);
-    
-    if ($cartItem->quantity < $cartItem->product->product_quantity) {
-        $cartItem->increment('quantity');
-        
-        if (request()->ajax()) {
-            return response()->json(['success' => true]);
-        }
-    }
-    
-    return redirect()->back();
-}
 
-    public function reduceQuantity($id)
+
+   public function updateQuantity(Request $request, $id)
     {
-        $cartItem = ProductCart::findOrFail($id);
+        $cartItem = ProductCart::with('product')->findOrFail($id);
+        $action = $request->input('action');
 
-        if ($cartItem->quantity > 1) {
-            $cartItem->decrement('quantity');
-        } else {
-            $cartItem->delete();
+        if ($action === 'increase') {
+            // Check stock before incrementing
+            if ($cartItem->quantity < $cartItem->product->product_quantity) {
+                $cartItem->increment('quantity');
+            } else {
+                return response()->json(['success' => false, 'message' => 'Maximum stock reached'], 400);
+            }
+        } elseif ($action === 'reduce') {
+            if ($cartItem->quantity > 1) {
+                $cartItem->decrement('quantity');
+            } else {
+                // If quantity is 1 and they hit minus, we could delete it, 
+                // but usually better to let them hit the trash icon.
+                return response()->json(['success' => false, 'message' => 'Minimum quantity reached'], 400);
+            }
         }
-        return redirect()->back();
+
+        // Recalculate totals for the response
+        $userId = Auth::id();
+        $cart = ProductCart::where('user_id', $userId)->with('product')->get();
+        $newSubtotal = $cart->sum(fn($item) => $item->product->product_price * $item->quantity);
+        $newCount = $cart->sum('quantity');
+
+        return response()->json([
+            'success' => true,
+            'newQty' => $cartItem->quantity,
+            'newItemTotal' => number_format($cartItem->product->product_price * $cartItem->quantity, 2),
+            'newSubtotal' => number_format($newSubtotal, 2),
+            'newCount' => $newCount
+        ]);
     }
+
+    /**
+     * Remove Product (AJAX Friendly)
+     */
     public function removeCartproduct($id)
     {
-        $cart_product = ProductCart::findOrFail($id);
-        $cart_product->delete();
+        $cartItem = ProductCart::findOrFail($id);
+        $cartItem->delete();
 
-        return redirect()->back()->with('success', 'Product Removed from Cart');
+        $userId = Auth::id();
+        $cart = ProductCart::where('user_id', $userId)->with('product')->get();
+        $newSubtotal = $cart->sum(fn($item) => $item->product->product_price * $item->quantity);
+        $newCount = $cart->sum('quantity');
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'newSubtotal' => number_format($newSubtotal, 2),
+                'newCount' => $newCount
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Product Removed');
     }
 
 public function confirmOrder(Request $request)

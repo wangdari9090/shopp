@@ -121,68 +121,75 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#addToCartForm').on('submit', function(e) {
-        e.preventDefault(); 
-
-        let form = $(this);
-        let actionUrl = form.attr('action');
-        let badge = $('#cart-count');
-
-        $.ajax({
-            type: "POST",
-            url: actionUrl,
-            data: form.serialize(),
-            dataType: 'json',
-            success: function(response) {
-                if(response.success) {
-                    badge.text(response.newCount);
-                    badge.css('display', 'inline-block');
-                    badge.animate({fontSize: '0.9rem'}, 100)
-                         .animate({fontSize: '0.6rem'}, 100);
-                }
-            },
-            error: function(xhr) {
-                // If Laravel middleware blocks the guest, it returns status 401
-                if (xhr.status === 401) {
-                    // Manually redirect the browser to the login page
-                    window.location.href = "{{ route('login.show') }}";
-                } else {
-                    console.error("Error adding to cart:", xhr.responseText);
-                    alert("Something went wrong. Please try again.");
-                }
-            }
-        });
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function () {
+<script data-navigate-once>
+document.addEventListener('livewire:navigated', function () {
+    
+    // 1. SELECT ELEMENTS
+    const form = document.getElementById('addToCartForm');
     const plusBtn = document.getElementById('plus-btn');
     const minusBtn = document.getElementById('minus-btn');
     const qtyInput = document.getElementById('product-qty');
+    const badge = document.getElementById('cart-count');
 
+    // 2. QUANTITY LOGIC
     if (plusBtn && minusBtn && qtyInput) {
-        plusBtn.addEventListener('click', function (e) {
+        plusBtn.onclick = function (e) {
             e.preventDefault();
             let currentVal = parseInt(qtyInput.value) || 1;
             let maxVal = parseInt(qtyInput.getAttribute('max')) || 999;
-            
-            if (currentVal < maxVal) {
-                qtyInput.value = currentVal + 1;
-            }
-        });
+            if (currentVal < maxVal) qtyInput.value = currentVal + 1;
+        };
 
-        minusBtn.addEventListener('click', function (e) {
+        minusBtn.onclick = function (e) {
             e.preventDefault();
             let currentVal = parseInt(qtyInput.value) || 1;
-            
-            if (currentVal > 1) {
-                qtyInput.value = currentVal - 1;
-            }
-        });
+            if (currentVal > 1) qtyInput.value = currentVal - 1;
+        };
+    }
+    if (form) {
+        form.onsubmit = function (e) {
+            e.preventDefault(); 
+
+            const formData = new FormData(form);
+            const actionUrl = form.getAttribute('action');
+
+            fetch(actionUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = "{{ route('login') }}";
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    // Update badge without reload
+                    if (badge) {
+                        badge.innerText = data.newCount;
+                        badge.style.display = 'inline-block';
+                        
+                        // Add a little pop animation
+                        badge.animate([
+                            { transform: 'scale(1)' },
+                            { transform: 'scale(1.5)' },
+                            { transform: 'scale(1)' }
+                        ], { duration: 200 });
+                    }
+                    // Optional: Show a small toast instead of a full alert
+                    console.log("Added to cart!");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        };
     }
 });
-
 </script>
 @endsection

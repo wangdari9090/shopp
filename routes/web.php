@@ -120,3 +120,9 @@ Route::post('/place-order', [OrderController::class, 'store'])->name('order.plac
 Route::post('/admin/order/update-status/{id}', [AdminController::class, 'updateOrderStatus'])
 ->name('admin.updateOrderStatus');
 
+
+// This MUST be Route::post because your JavaScript uses method: 'POST'
+Route::post('/cart/update/{id}', [OrderController::class, 'updateQuantity']);
+
+// This MUST be Route::delete because your JavaScript uses method: 'DELETE'
+Route::delete('/cart/remove/{id}', [OrderController::class, 'removeCartproduct']);
