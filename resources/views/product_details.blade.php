@@ -2,15 +2,6 @@
 @section('content')
 
 <div class="container py-5">
-    {{-- Success message --}}
-       {{-- @if (session('success'))
-        <div class="alert alert-success border-0 small shadow-sm alert-dismissible fade show" role="alert" id="auto-close-alert">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close" style="font-size: 0.6rem;"></button>
-        </div>
-    @endif --}}
-
     <div class="row g-1">
         
         <div class="col-lg-4 col-md-6">
@@ -52,40 +43,64 @@
                     </p>
                 </div>
 
-                <div class="mb-4">
-                    @if ($product->product_quantity > 0)
-                        <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3 py-2">
-                            <i class="bi bi-check2-circle me-1"></i> In Stock
-                        </span>
-                    @else
-                        <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-2">
-                            Out of Stock
-                        </span>
-                    @endif
-                </div>
+                <div id="stock-status-container" class="mb-4">
+    @if ($product->product_quantity > 10)
+        <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3 py-2">
+            <i class="bi bi-check2-circle me-1"></i> In Stock
+        </span>
+    @elseif ($product->product_quantity <= 10 && $product->product_quantity > 0)
+        <span class="badge rounded-pill bg-warning-subtle text-dark border border-warning px-3 py-2">
+            Only {{ $product->product_quantity }} item left
+        </span>
+    @else
+        <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-2">
+            Out of Stock
+        </span>
+    @endif
+</div>
                 <div class="d-flex align-items-center gap-2 pt-2">
-    <form id="addToCartForm" action="{{ route('add_to_cart', $product->id) }}" method="POST" class="d-flex align-items-center gap-2">
-        @csrf
-        
-        <div class="input-group input-group-sm border rounded" style="width: 110px;">
-    <button class="btn btn-link text-dark text-decoration-none px-2" type="button" id="minus-btn">
-        <i class="bi bi-dash"></i>
-    </button>
-    
-    <input type="number" name="quantity" id="product-qty" 
-           class="form-control border-0 text-center bg-transparent p-0" 
-           value="1" min="1" max="{{ $product->product_quantity }}" 
-           style="box-shadow: none; font-weight: bold;">
-    
-    <button class="btn btn-link text-dark text-decoration-none px-2" type="button" id="plus-btn">
-        <i class="bi bi-plus"></i>
+    @if ($product->product_quantity > 0)
+        <form id="addToCartForm" action="{{ route('add_to_cart', $product->id) }}" method="POST" class="d-flex align-items-center gap-2">
+            @csrf
+            <div class="input-group input-group-sm border rounded" style="width: 110px;">
+                <button class="btn btn-link text-dark text-decoration-none px-2" type="button" id="minus-btn">
+                    <i class="bi bi-dash"></i>
+                </button>
+                
+                <input type="number" name="quantity" id="product-qty" 
+                       class="form-control border-0 text-center bg-transparent p-0" 
+                       value="1" min="1" max="{{ $product->product_quantity }}" 
+                       style="box-shadow: none; font-weight: bold;" readonly>
+                
+                <button class="btn btn-link text-dark text-decoration-none px-2" type="button" id="plus-btn">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+    {{-- Instant Error Message Placeholder --}}
+    <div id="stock-error" class="text-danger fw-bold d-none" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+        <i class="bi bi-exclamation-triangle-fill"></i> MAX STOCK REACHED
+    </div>
+
+    <button type="submit" id="addToCartBtn" class="btn btn-success btn-sm fw-bold shadow-sm text-uppercase tracking-wider px-3 py-2">
+        <i class="bi bi-cart-plus me-1"></i> Add to Cart
     </button>
 </div>
-
-       <button type="submit" class="btn btn-success btn-sm fw-bold shadow-sm text-uppercase tracking-wider px-3 py-2">
-        <i class="bi bi-cart-plus me-1"></i> Add
-    </button>
-    </form>
+        </form>
+    @else
+        {{-- Out of Stock State --}}
+        <div class="d-flex align-items-center gap-2 opacity-50" style="cursor: not-allowed;">
+            <div class="input-group input-group-sm border rounded bg-light" style="width: 110px;">
+                <button class="btn btn-link text-muted px-2 disabled" type="button"><i class="bi bi-dash"></i></button>
+                <input type="text" class="form-control border-0 text-center bg-transparent p-0" value="0" disabled>
+                <button class="btn btn-link text-muted px-2 disabled" type="button"><i class="bi bi-plus"></i></button>
+            </div>
+            <button class="btn btn-secondary btn-sm fw-bold text-uppercase px-3 py-2 disabled">
+                Sold Out
+            </button>
+        </div>
+    @endif
 
     <a href="{{ route('index') }}" class="btn btn-outline-dark btn-sm px-3 py-2 d-flex align-items-center" title="Back to Shop">
         <i class="bi bi-arrow-left"></i>
@@ -122,33 +137,59 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script data-navigate-once>
+function changeMainImage(imagePath, element) {
+    const mainImage = document.getElementById('mainProductImage');
+    mainImage.style.opacity = '0';
+    setTimeout(() => {
+        mainImage.src = imagePath;
+        mainImage.style.opacity = '1';
+    }, 150);
+    document.querySelectorAll('.thumb-box').forEach(box => box.classList.remove('border-success'));
+    element.classList.add('border-success');
+}
+
 document.addEventListener('livewire:navigated', function () {
-    
-    // 1. SELECT ELEMENTS
     const form = document.getElementById('addToCartForm');
     const plusBtn = document.getElementById('plus-btn');
     const minusBtn = document.getElementById('minus-btn');
     const qtyInput = document.getElementById('product-qty');
     const badge = document.getElementById('cart-count');
+    const errorMsg = document.getElementById('stock-error');
+    const addToCartBtn = document.getElementById('addToCartBtn');
 
-    // 2. QUANTITY LOGIC
+    // 1. Quantity Plus/Minus Logic
     if (plusBtn && minusBtn && qtyInput) {
-        plusBtn.onclick = function (e) {
+        plusBtn.onclick = (e) => {
             e.preventDefault();
             let currentVal = parseInt(qtyInput.value) || 1;
-            let maxVal = parseInt(qtyInput.getAttribute('max')) || 999;
+            let maxVal = parseInt(qtyInput.getAttribute('max')) || 0;
             if (currentVal < maxVal) qtyInput.value = currentVal + 1;
         };
-
-        minusBtn.onclick = function (e) {
+        minusBtn.onclick = (e) => {
             e.preventDefault();
             let currentVal = parseInt(qtyInput.value) || 1;
             if (currentVal > 1) qtyInput.value = currentVal - 1;
         };
     }
+
+    // 2. Single Combined Form Submit Logic
     if (form) {
         form.onsubmit = function (e) {
             e.preventDefault(); 
+
+            const requestedQty = parseInt(qtyInput.value);
+            const maxStock = parseInt(qtyInput.getAttribute('max'));
+
+            // Validation Check
+            if (requestedQty > maxStock || maxStock <= 0) {
+                errorMsg.classList.remove('d-none');
+                addToCartBtn.classList.add('shake-animation');
+                setTimeout(() => {
+                    errorMsg.classList.add('d-none');
+                    addToCartBtn.classList.remove('shake-animation');
+                }, 3000);
+                return false;
+            }
 
             const formData = new FormData(form);
             const actionUrl = form.getAttribute('action');
@@ -162,29 +203,43 @@ document.addEventListener('livewire:navigated', function () {
                     'Accept': 'application/json'
                 }
             })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = "{{ route('login') }}";
-                    return;
-                }
-                return response.json();
-            })
+            .then(response => response.status === 401 ? Livewire.navigate("{{ route('login') }}") : response.json())
             .then(data => {
                 if (data && data.success) {
-                    // Update badge without reload
+                    // Update Badge
                     if (badge) {
                         badge.innerText = data.newCount;
                         badge.style.display = 'inline-block';
-                        
-                        // Add a little pop animation
-                        badge.animate([
-                            { transform: 'scale(1)' },
-                            { transform: 'scale(1.5)' },
-                            { transform: 'scale(1)' }
-                        ], { duration: 200 });
+                        badge.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 200 });
                     }
-                    // Optional: Show a small toast instead of a full alert
-                    console.log("Added to cart!");
+
+                    // Update Stock Logic
+                    let currentMax = parseInt(qtyInput.getAttribute('max'));
+                    let newStock = currentMax - requestedQty;
+                    qtyInput.setAttribute('max', newStock);
+
+                    const statusContainer = document.getElementById('stock-status-container');
+
+                    if (newStock <= 0) {
+                        // REPLACEMENT: This literally removes the button from existence
+                        if (statusContainer) {
+                            statusContainer.innerHTML = `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-2">Out of Stock</span>`;
+                        }
+                        form.innerHTML = `
+                            <div class="d-flex align-items-center gap-2 opacity-50" style="cursor: not-allowed;">
+                                <div class="input-group input-group-sm border rounded bg-light" style="width: 110px;">
+                                    <button class="btn btn-link text-muted px-2 disabled" type="button"><i class="bi bi-dash"></i></button>
+                                    <input type="text" class="form-control border-0 text-center bg-transparent p-0" value="0" disabled>
+                                    <button class="btn btn-link text-muted px-2 disabled" type="button"><i class="bi bi-plus"></i></button>
+                                </div>
+                                <button class="btn btn-secondary btn-sm fw-bold text-uppercase px-3 py-2 disabled">Sold Out</button>
+                            </div>`;
+                    } else {
+                        qtyInput.value = 1;
+                        if (statusContainer && newStock <= 10) {
+                            statusContainer.innerHTML = `<span class="badge rounded-pill bg-warning-subtle text-dark border border-warning px-3 py-2">Only ${newStock} item left</span>`;
+                        }
+                    }
                 }
             })
             .catch(error => console.error('Error:', error));

@@ -124,7 +124,7 @@
             <div id="bestSellerCarousel{{ $product->id }}" 
                  class="carousel slide carousel-fade" 
                  data-bs-ride="carousel" 
-                 data-bs-interval="2000">
+                 data-bs-interval="3000">
 
                 <div class="carousel-inner">
                     @foreach($product->product_image as $imgIndex => $image)

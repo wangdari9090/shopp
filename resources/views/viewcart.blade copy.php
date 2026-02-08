@@ -80,10 +80,24 @@
             <div class="col-lg-4 border-start px-lg-4">
                 <h6 class="serif mb-4 text-uppercase tracking-widest">Delivery Details</h6>
                 <div class="mb-4 position-relative pb-3">
-                    <label class="small text-muted text-uppercase fw-bold">Contact Number</label>
-                    <input type="text" name="receiver_phone" class="form-control fancy-input shadow-none @error('receiver_phone') is-invalid @enderror" value="{{ old('receiver_phone') }}" placeholder="+95..." required>
-                    @error('receiver_phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
+    <label class="small text-muted text-uppercase fw-bold">Contact Number</label>
+    <input type="text" 
+           name="receiver_phone" 
+           id="receiver_phone"
+           class="form-control fancy-input shadow-none @error('receiver_phone') is-invalid @enderror" 
+           value="{{ old('receiver_phone') }}" 
+           placeholder="+95..." 
+           inputmode="numeric" 
+           required>
+    
+    {{-- This is the instant JS error message --}}
+    <div id="phone-error" class="text-danger extra-small mt-1 d-none" style="font-size: 0.65rem; letter-spacing: 1px;">
+        <i class="bi bi-exclamation-circle"></i> NUMBERS ONLY PLEASE
+    </div>
+
+    {{-- This is the Laravel validation error --}}
+    @error('receiver_phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+</div>
                 <div class="mb-4 position-relative pb-3">
                     <label class="small text-muted text-uppercase fw-bold">Shipping Address</label>
                     <textarea required name="receiver_address" class="form-control fancy-input shadow-none @error('receiver_address') is-invalid @enderror" rows="3" placeholder="Full Street Address">{{ old('receiver_address') }}</textarea>
@@ -168,10 +182,50 @@
     .payment-card input:checked + .card-content span { color: #1a1a1a; font-weight: 600; }
     
     .qty-control { display: inline-flex; align-items: center; }
+    /* Luxury Error State */
+.fancy-input.is-invalid {
+    border-bottom: 1px solid #d9534f !important; /* Elegant Muted Red */
+    background-image: none !important; /* Removes default Bootstrap arrow */
+}
+
+.invalid-feedback {
+    color: #d9534f;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-top: 5px;
+}
 </style>
 
 {{-- Same JS Logic as before --}}
 <script data-navigate-once>
+    document.addEventListener('livewire:navigated', function() {
+    const phoneInput = document.getElementById('receiver_phone');
+    const phoneError = document.getElementById('phone-error');
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            const originalValue = this.value;
+            // regex to allow only numbers and the plus sign
+            const cleanedValue = this.value.replace(/[^0-9+]/g, '');
+
+            if (originalValue !== cleanedValue) {
+                // Show the error message
+                phoneError.classList.remove('d-none');
+                this.classList.add('border-danger');
+                
+                // Hide it after 2 seconds
+                setTimeout(() => {
+                    phoneError.classList.add('d-none');
+                    this.classList.remove('border-danger');
+                }, 2000);
+            }
+
+            this.value = cleanedValue;
+        });
+    }
+});
 document.addEventListener('livewire:navigated', function() {
     window.updateQty = function(id, action) {
         fetch(`/cart/update/${id}`, {
