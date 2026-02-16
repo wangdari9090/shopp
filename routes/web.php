@@ -16,7 +16,7 @@ Route::get('/', [UserController::class, 'index'])->name('index');
 Route::get('/contact', [UserController::class, 'contact'])->name('contact');
 Route::get('/product_details/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/category/{id}/products', [UserController::class, 'categoryProducts'])->name('category.products');
-    
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes
@@ -49,14 +49,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/view_cart', [OrderController::class, 'viewCart'])
         ->name('cart.index');
 
-   Route::delete('/remove_cart_product/{id}', [OrderController::class, 'removeCartproduct'])
-    ->name('cart.remove');
+    Route::delete('/remove_cart_product/{id}', [OrderController::class, 'removeCartproduct'])
+        ->name('cart.remove');
 
     Route::post('/confirm_order', [OrderController::class, 'confirmOrder'])
         ->name('order.confirm');
 
     Route::post('/cart/increase/{id}', [OrderController::class, 'increaseQuantity'])->name('cart.increase');
-    
+
     Route::post('/cart/reduce/{id}', [OrderController::class, 'reduceQuantity'])->name('cart.reduce');
 });
 
@@ -107,22 +107,27 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])
         ->name('products.delete');
-    });
-    
-// Orders
-Route::get('/orders', [AdminController::class, 'viewOrders'])
-    ->name('orders.index');
 
-Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])
-    ->name('orders.updateStatus');
+    // Orders
+    Route::get('/orders', [AdminController::class, 'viewOrders'])
+        ->name('orders.index');
 
-Route::post('/place-order', [OrderController::class, 'store'])->name('order.place');
-Route::post('/admin/order/update-status/{id}', [AdminController::class, 'updateOrderStatus'])
-->name('admin.updateOrderStatus');
+    Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])
+        ->name('orders.updateStatus');
 
+    Route::post('/cart/update/{id}', [OrderController::class, 'updateQuantity']);
 
-// This MUST be Route::post because your JavaScript uses method: 'POST'
-Route::post('/cart/update/{id}', [OrderController::class, 'updateQuantity']);
+    Route::delete('/cart/remove/{id}', [OrderController::class, 'removeCartproduct']);
 
-// This MUST be Route::delete because your JavaScript uses method: 'DELETE'
-Route::delete('/cart/remove/{id}', [OrderController::class, 'removeCartproduct']);
+    // Orders Management
+    Route::get('/orders', [AdminController::class, 'viewOrders'])->name('orders.index');
+    Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.updateStatus');
+    Route::post('/orders/{id}/confirm-payment', [AdminController::class, 'confirmPayment'])
+        ->name('order.confirm-payment');
+    Route::post('/orders/{id}/cancel', [AdminController::class, 'cancelOrder'])->name('orders.cancel');
+    Route::post('/orders/{id}/toggle-payment', [AdminController::class, 'togglePaymentStatus'])->name('orders.togglePayment');
+    Route::put('/orders/{id}/edit-items', [AdminController::class, 'editOrderItems'])->name('order.editItems');
+
+    // Payments
+    Route::get('/payment/process/{order}/{method}', [OrderController::class, 'paymentProcess'])->name('payment.process');
+});

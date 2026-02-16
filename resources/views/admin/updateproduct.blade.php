@@ -136,7 +136,7 @@
 
                         <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
                             <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary px-4">
-                                <i class="bi bi-arrow-left me-1"></i> Cancel
+                                <i class="bi bi-arrow-left me-1"></i>
                             </a>
                             <button type="submit" class="btn btn-dark px-5 fw-bold" style="background-color: var(--forest);">
                                 <i class="bi bi-check2-circle me-1"></i> Update Product

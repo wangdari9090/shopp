@@ -6,7 +6,6 @@ $(document).ready(function() {
         validateEmail();
     });
 
-    // Stop form submission if user presses Enter while in email field
     $emailInput.on('keypress', function(e) {
         if (e.which === 13) { 
             e.preventDefault();
@@ -33,6 +32,15 @@ $(document).ready(function() {
                 $emailInput.removeClass('is-invalid').addClass('is-valid');
             },
             error: function(xhr) {
+                if (xhr.status === 419) {
+                    location.reload(); 
+                    return;
+                }
+                if (xhr.status === 404) {
+                    console.error("The requested URL was not found on the server.");
+                    $errorDiv.text('System error: Validation service unavailable.');
+                    return;
+                }
                 if (xhr.status === 422) {
                     $emailInput.removeClass('is-valid').addClass('is-invalid');
                     let errors = xhr.responseJSON.errors;

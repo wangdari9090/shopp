@@ -1,4 +1,4 @@
-{{-- <div class="row g-4">
+<div class="row g-4">
     @foreach($products as $product)
     <div class="col-6 col-md-4 col-lg-3">
         <div class="product-arrival-card-carousel overflow-hidden">
@@ -36,4 +36,4 @@
     <div class="luxury-pagination mt-4">
         {{ $products->appends(request()->query())->links('pagination::bootstrap-5') }}
     </div>
-</div> --}}
+</div>
