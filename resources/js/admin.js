@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function () {
         var myCarousel = document.querySelector('#arrivalCarousel')
         var carousel = new bootstrap.Carousel(myCarousel, {
-            interval: 4000,
+            interval: 3000,
             ride: 'carousel',
             wrap: true,
             pause: false

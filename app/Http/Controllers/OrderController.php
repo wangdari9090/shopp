@@ -18,10 +18,10 @@ class OrderController extends Controller
         ]);
 
         $qtyToAdd = $request->input('quantity', 1);
-        
+
         $cartItem = ProductCart::where('user_id', Auth::id())
-                               ->where('product_id', $id)
-                               ->first();
+            ->where('product_id', $id)
+            ->first();
 
         if ($cartItem) {
             $cartItem->increment('quantity', $qtyToAdd);
@@ -45,7 +45,7 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Selection updated.');
     }
 
-    public function viewCart() 
+    public function viewCart()
     {
         if (Auth::check()) {
             $cart = ProductCart::where('user_id', Auth::id())->with('product')->get();
@@ -53,13 +53,13 @@ class OrderController extends Controller
 
             $subtotal = 0;
             foreach ($cart as $item) {
-                $quantity = $item->quantity ?? 1; 
+                $quantity = $item->quantity ?? 1;
                 $subtotal += $item->product->product_price * $quantity;
             }
 
             return view('viewcart', compact('count', 'cart', 'subtotal'));
         }
-        
+
         return redirect()->route('login');
     }
 
@@ -117,15 +117,15 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Product Removed');
     }
 
- public function paymentProcess($orderId, $method)
-{
-    $order = Order::with(['payment', 'items.product'])->findOrFail($orderId);
+    public function paymentProcess($orderId, $method)
+    {
+        $order = Order::with(['payment', 'items.product'])->findOrFail($orderId);
 
-    if ($order->user_id !== auth()->id()) {
-        abort(403);
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
+        return view('payment.success', compact('order', 'method'));
     }
-    return view('payment.success', compact('order', 'method'));
-}
     public function confirmOrder(Request $request)
     {
         $request->validate([
@@ -151,7 +151,7 @@ class OrderController extends Controller
             'user_order_number' => $nextNumber,
             'receiver_address'  => $request->receiver_address,
             'receiver_phone'    => $request->receiver_phone,
-            'total_price'       => $total, 
+            'total_price'       => $total,
             'payment_method'    => $request->payment_method,
             'status'            => 'confirmed'
         ]);
@@ -177,10 +177,10 @@ class OrderController extends Controller
         }
 
         if ($request->payment_method === 'cod') {
-            return redirect()->route('payment.process', ['order' => $order->id, 'method' => 'cod'])
-                            ->with('success', 'Order Placed! Voucher #' . $nextNumber);
+            return redirect()->route('payment.success', ['order' => $order->id, 'method' => 'cod'])
+                ->with('success', 'Order Placed! Voucher #' . $nextNumber);
         }
 
-        return redirect()->route('payment.process', ['order' => $order->id, 'method' => $request->payment_method]);
+        return redirect()->route('payment.success', ['order' => $order->id, 'method' => $request->payment_method]);
     }
 }

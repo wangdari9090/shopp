@@ -5,34 +5,25 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\UserDashboardController;
 
-// Route::get('/', function () {
-//     return 'OK';
-// });
-
+/*
+|--------------------------------------------------------------------------
+| Public Routes (Guest access)
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', [UserController::class, 'index'])->name('index');
 Route::get('/contact', [UserController::class, 'contact'])->name('contact');
 Route::get('/product_details/{id}', [UserController::class, 'productDetails'])->name('product.details');
 Route::get('/category/{id}/products', [UserController::class, 'categoryProducts'])->name('category.products');
 
-/*
-|--------------------------------------------------------------------------
-| Auth Routes
-|--------------------------------------------------------------------------
-*/
+// Auth
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login.show');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register.show');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
-
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
-
 Route::post('/register-validate', [UserController::class, 'validateForm'])->name('register.validate');
+
 /*
 |--------------------------------------------------------------------------
 | User Routes (Authenticated Users)
@@ -40,94 +31,57 @@ Route::post('/register-validate', [UserController::class, 'validateForm'])->name
 */
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', [UserController::class, 'dashboard'])
-        ->name('user.dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
 
-    Route::post('/add_to_cart/{id}', [OrderController::class, 'addToCart'])
-        ->name('add_to_cart');
+    // Cart Operations
+    Route::get('/view_cart', [OrderController::class, 'viewCart'])->name('cart.index');
+    Route::post('/add_to_cart/{id}', [OrderController::class, 'addToCart'])->name('add_to_cart');
+    Route::post('/confirm_order', [OrderController::class, 'confirmOrder'])->name('order.confirm');
 
-    Route::get('/view_cart', [OrderController::class, 'viewCart'])
-        ->name('cart.index');
+    // JS/AJAX Cart Updates
+    Route::post('/cart/update/{id}', [OrderController::class, 'updateQuantity'])->name('cart.js.update');
+    Route::delete('/cart/remove/{id}', [OrderController::class, 'removeCartproduct'])->name('cart.js.remove');
 
-    Route::delete('/remove_cart_product/{id}', [OrderController::class, 'removeCartproduct'])
-        ->name('cart.remove');
-
-    Route::post('/confirm_order', [OrderController::class, 'confirmOrder'])
-        ->name('order.confirm');
-
-    Route::post('/cart/increase/{id}', [OrderController::class, 'increaseQuantity'])->name('cart.increase');
-
-    Route::post('/cart/reduce/{id}', [OrderController::class, 'reduceQuantity'])->name('cart.reduce');
+    // Success/Payment Page for Users
+    Route::get('/payment/success/{order}/{method}', [OrderController::class, 'paymentProcess'])->name('payment.success');
 });
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes
+| Admin Routes (Restricted to Admin)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])
-        ->name('dashboard');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
-    // Category
-    Route::get('/categories', [AdminController::class, 'viewCategory'])
-        ->name('categories.index');
+    // Category Management
+    Route::controller(AdminController::class)->group(function () {
+        Route::get('/categories', 'viewCategory')->name('categories.index');
+        Route::get('/categories/create', 'addCategory')->name('categories.create');
+        Route::post('/categories', 'postAddCategory')->name('categories.store');
+        Route::get('/categories/{id}/edit', 'updateCategory')->name('categories.edit');
+        Route::post('/categories/{id}', 'postupdateCategory')->name('categories.update');
+        Route::delete('/categories/{id}', 'deleteCategory')->name('categories.delete');
 
-    Route::get('/categories/create', [AdminController::class, 'addCategory'])
-        ->name('categories.create');
+        // Product Management
+        Route::get('/products', 'viewProduct')->name('products.index');
+        Route::get('/products/create', 'addProduct')->name('products.create');
+        Route::post('/products', 'postAddProduct')->name('products.store');
+        Route::get('/products/{id}/edit', 'updateProduct')->name('products.edit');
+        Route::put('/products/{id}', 'postUpdateProduct')->name('products.update');
+        Route::delete('/products/{id}', 'deleteProduct')->name('products.delete');
 
-    Route::post('/categories', [AdminController::class, 'postAddCategory'])
-        ->name('categories.store');
+        // Order Management
+        Route::get('/orders', 'viewOrders')->name('orders.index');
+        Route::patch('/orders/{id}/status', 'updateOrderStatus')->name('orders.updateStatus');
+        Route::post('/orders/{id}/confirm-payment', 'confirmPayment')->name('order.confirm-payment');
+        Route::post('/orders/{id}/cancel', 'cancelOrder')->name('orders.cancel');
+        Route::post('/orders/{id}/toggle-payment', 'togglePaymentStatus')->name('orders.togglePayment');
+        Route::put('/orders/{id}/edit-items', 'editOrderItems')->name('order.editItems');
+    });
 
-    Route::get('/categories/{id}/edit', [AdminController::class, 'updateCategory'])
-        ->name('categories.edit');
-
-    Route::post('/categories/{id}', [AdminController::class, 'postupdateCategory'])
-        ->name('categories.update');
-
-    Route::delete('/categories/{id}', [AdminController::class, 'deleteCategory'])
-        ->name('categories.delete');
-
-    // Products
-    Route::get('/products', [AdminController::class, 'viewProduct'])
-        ->name('products.index');
-
-    Route::get('/products/create', [AdminController::class, 'addProduct'])
-        ->name('products.create');
-
-    Route::post('/products', [AdminController::class, 'postAddProduct'])
-        ->name('products.store');
-
-    Route::get('/products/{id}/edit', [AdminController::class, 'updateProduct'])
-        ->name('products.edit');
-
-    Route::put('/products/{id}', [AdminController::class, 'postUpdateProduct'])
-        ->name('products.update');
-
-    Route::delete('/products/{id}', [AdminController::class, 'deleteProduct'])
-        ->name('products.delete');
-
-    // Orders
-    Route::get('/orders', [AdminController::class, 'viewOrders'])
-        ->name('orders.index');
-
-    Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])
-        ->name('orders.updateStatus');
-
-    Route::post('/cart/update/{id}', [OrderController::class, 'updateQuantity']);
-
-    Route::delete('/cart/remove/{id}', [OrderController::class, 'removeCartproduct']);
-
-    // Orders Management
-    Route::get('/orders', [AdminController::class, 'viewOrders'])->name('orders.index');
-    Route::patch('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.updateStatus');
-    Route::post('/orders/{id}/confirm-payment', [AdminController::class, 'confirmPayment'])
-        ->name('order.confirm-payment');
-    Route::post('/orders/{id}/cancel', [AdminController::class, 'cancelOrder'])->name('orders.cancel');
-    Route::post('/orders/{id}/toggle-payment', [AdminController::class, 'togglePaymentStatus'])->name('orders.togglePayment');
-    Route::put('/orders/{id}/edit-items', [AdminController::class, 'editOrderItems'])->name('order.editItems');
-
-    // Payments
+    // Admin-specific Payment Process (if needed)
     Route::get('/payment/process/{order}/{method}', [OrderController::class, 'paymentProcess'])->name('payment.process');
 });
