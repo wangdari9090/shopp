@@ -2,6 +2,14 @@
 
 @section('content')
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<div class="container mt-3">
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show serif small" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+</div>
 
 <div class="container py-5 mt-4" id="cart-container">
     {{-- Header --}}
@@ -170,34 +178,46 @@
     .qty-control { display: inline-flex; align-items: center; }
 </style>
 
-{{-- Same JS Logic as before --}}
 <script data-navigate-once>
 document.addEventListener('livewire:navigated', function() {
-    window.updateQty = function(id, action) {
-        fetch(`/cart/update/${id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ action: action })
-        })
-        .then(async response => {
-            const data = await response.json();
-            if (response.ok) {
+  window.updateQty = function(id, action) {
+    fetch(`/cart/update/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ action: action })
+    })
+    .then(async response => {
+        const data = await response.json();
+        
+        if (response.ok) {
+            if (parseInt(data.newCount) === 0) {
+                location.reload();
+                return; 
+            }
+            if (data.removed) {
+                const row = document.getElementById(`row-${id}`);
+                if (row) row.remove();
+            } else {
                 document.getElementById(`qty-${id}`).innerText = data.newQty;
                 document.getElementById(`total-${id}`).innerText = data.newItemTotal;
-                document.getElementById('subtotal-val').innerText = data.newSubtotal;
-                document.getElementById('total-due').innerText = data.newSubtotal;
-                document.getElementById('total-count').innerText = data.newCount;
-                const badge = document.getElementById('cart-count');
-                if(badge) badge.innerText = data.newCount;
             }
-        });
-    };
-
+            document.getElementById('subtotal-val').innerText = data.newSubtotal;
+            document.getElementById('total-due').innerText = data.newSubtotal;
+            document.getElementById('total-count').innerText = data.newCount;
+            
+            const badge = document.getElementById('cart-count');
+            if(badge) badge.innerText = data.newCount;
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+};
     window.removeItem = function(id) {
         if(!confirm('Remove this item?')) return;
         fetch(`/cart/remove/${id}`, {
@@ -219,6 +239,15 @@ document.addEventListener('livewire:navigated', function() {
             }
         });
     };
+
+    const orderForm = document.getElementById('order-form');
+    if(orderForm) {
+        orderForm.addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> PROCESSING...';
+        });
+    }
 });
 </script>
 @endsection

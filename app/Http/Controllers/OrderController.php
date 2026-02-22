@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -67,6 +68,7 @@ class OrderController extends Controller
     {
         $cartItem = ProductCart::with('product')->findOrFail($id);
         $action = $request->input('action');
+        $removed = false;
 
         if ($action === 'increase') {
             if ($cartItem->quantity < $cartItem->product->product_quantity) {
@@ -78,7 +80,8 @@ class OrderController extends Controller
             if ($cartItem->quantity > 1) {
                 $cartItem->decrement('quantity');
             } else {
-                return response()->json(['success' => false, 'message' => 'Minimum quantity reached'], 400);
+                $cartItem->delete();
+                $removed = true;
             }
         }
 
@@ -89,8 +92,9 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'newQty' => $cartItem->quantity,
-            'newItemTotal' => number_format($cartItem->product->product_price * $cartItem->quantity, 2),
+            'removed' => $removed,
+            'newQty' => $removed ? 0 : $cartItem->quantity,
+            'newItemTotal' => $removed ? 0 : number_format($cartItem->product->product_price * $cartItem->quantity, 2),
             'newSubtotal' => number_format($newSubtotal, 2),
             'newCount' => $newCount
         ]);
@@ -126,6 +130,7 @@ class OrderController extends Controller
         }
         return view('payment.success', compact('order', 'method'));
     }
+
     public function confirmOrder(Request $request)
     {
         $request->validate([
@@ -140,47 +145,52 @@ class OrderController extends Controller
         if ($cartItems->isEmpty()) {
             return redirect()->back()->with('error', 'Your selection is empty.');
         }
+        foreach ($cartItems as $checkItem) {
+            if ($checkItem->product->product_quantity < $checkItem->quantity) {
+                $title = $checkItem->product->product_title;
+                $checkItem->delete();
 
-        $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
-
-        $lastOrder = Order::where('user_id', $userId)->latest('id')->first();
-        $nextNumber = $lastOrder ? (int)$lastOrder->user_order_number + 1 : 1;
-
-        $order = Order::create([
-            'user_id'           => $userId,
-            'user_order_number' => $nextNumber,
-            'receiver_address'  => $request->receiver_address,
-            'receiver_phone'    => $request->receiver_phone,
-            'total_price'       => $total,
-            'payment_method'    => $request->payment_method,
-            'status'            => 'confirmed'
-        ]);
-
-        $paymentStatus = ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending';
-
-        $order->payment()->create([
-            'method' => $request->payment_method,
-            'amount' => $total,
-            'status' => $paymentStatus,
-        ]);
-
-        foreach ($cartItems as $cartItem) {
-            OrderItem::create([
-                'order_id'   => $order->id,
-                'product_id' => $cartItem->product_id,
-                'quantity'   => $cartItem->quantity,
-                'price'      => $cartItem->product->product_price,
-            ]);
-
-            $cartItem->product->decrement('product_quantity', $cartItem->quantity);
-            $cartItem->delete();
+                return redirect()->back()->with('error', "Sorry, {$title} is out of stock and has been removed from your selection.");
+            }
         }
+        try {
+            return DB::transaction(function () use ($request, $cartItems, $userId) {
+                $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
+                $lastOrder = Order::where('user_id', $userId)->latest('id')->first();
+                $nextNumber = $lastOrder ? (int)$lastOrder->user_order_number + 1 : 1;
 
-        if ($request->payment_method === 'cod') {
-            return redirect()->route('payment.success', ['order' => $order->id, 'method' => 'cod'])
-                ->with('success', 'Order Placed! Voucher #' . $nextNumber);
+                $order = Order::create([
+                    'user_id'           => $userId,
+                    'user_order_number' => $nextNumber,
+                    'receiver_address'  => $request->receiver_address,
+                    'receiver_phone'    => $request->receiver_phone,
+                    'total_price'       => $total,
+                    'payment_method'    => $request->payment_method,
+                    'status'            => 'confirmed'
+                ]);
+
+                $order->payment()->create([
+                    'method' => $request->payment_method,
+                    'amount' => $total,
+                    'status' => ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending',
+                ]);
+
+                foreach ($cartItems as $cartItem) {
+                    OrderItem::create([
+                        'order_id'   => $order->id,
+                        'product_id' => $cartItem->product_id,
+                        'quantity'   => $cartItem->quantity,
+                        'price'      => $cartItem->product->product_price,
+                    ]);
+                    $cartItem->product->decrement('product_quantity', $cartItem->quantity);
+                    $cartItem->delete();
+                }
+
+                return redirect()->route('payment.success', ['order' => $order->id, 'method' => $request->payment_method])
+                    ->with('success', 'Order Placed!');
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
         }
-
-        return redirect()->route('payment.success', ['order' => $order->id, 'method' => $request->payment_method]);
     }
 }
