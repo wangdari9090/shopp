@@ -101,48 +101,70 @@
 
             {{-- 3. Payment Method Column --}}
             <div class="col-lg-4 border-start px-lg-4">
-                <h6 class="serif mb-4 text-uppercase tracking-widest">Payment Method</h6>
-                
-                <div class="payment-selection-grid">
-                    <label class="payment-card">
-                        <input type="radio" name="payment_method" value="cod" checked>
-                        <div class="card-content">
-                            <i class="bi bi-cash-stack"></i>
-                            <span>Cash on Delivery</span>
-                        </div>
-                    </label>
-
-                    <label class="payment-card">
-                        <input type="radio" name="payment_method" value="online_banking">
-                        <div class="card-content">
-                            <i class="bi bi-bank"></i>
-                            <span>Mobile Banking</span>
-                        </div>
-                    </label>
-
-                    <label class="payment-card">
-                        <input type="radio" name="payment_method" value="card">
-                        <div class="card-content">
-                            <i class="bi bi-credit-card-2-front"></i>
-                            <span>Credit / Debit</span>
-                        </div>
-                    </label>
-                </div>
-
-                @error('payment_method') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
-
-                <div class="mt-5">
-                    <button type="submit" class="btn btn-confirm w-100 text-uppercase fw-bold py-3">Confirm Order</button>
-                    <p class="small text-muted italic text-center mt-3">Complimentary shipping on all orders.</p>
-                </div>
+    <h6 class="serif mb-4 text-uppercase tracking-widest">Payment Method</h6>
+    
+    <div class="payment-selection-grid">
+        <label class="payment-card">
+            <input type="radio" name="payment_method" value="cod" onclick="toggleSubMethods('none')">
+            <div class="card-content">
+                <i class="bi bi-cash-stack"></i>
+                <span>Cash on Delivery</span>
             </div>
+        </label>
+
+        <label class="payment-card">
+            <input type="radio" name="payment_method" value="online_banking" onclick="toggleSubMethods('bank')">
+            <div class="card-content">
+                <i class="bi bi-bank"></i>
+                <span>Mobile Banking</span>
+            </div>
+        </label>
+
+        <label class="payment-card">
+            <input type="radio" name="payment_method" value="card" onclick="toggleSubMethods('card')">
+            <div class="card-content">
+                <i class="bi bi-credit-card-2-front"></i>
+                <span>Credit / Debit Card</span>
+            </div>
+        </label>
+    </div>
+
+    {{-- Bank Selection List --}}
+    <div id="bank-list" class="sub-method-container mt-3" style="display: none;">
+        <label class="small text-muted text-uppercase fw-bold mb-2 d-block">Choose Your Bank</label>
+        <select name="bank_name" class="form-select fancy-input py-2">
+            <option value="">-- Select Bank --</option>
+            <option value="AA Bank">KBZ Bank</option>
+            <option value="BB Bank">AYA Bank</option>
+            <option value="Kpay">Wave Money</option>
+        </select>
+    </div>
+
+    {{-- Card Selection List --}}
+    <div id="card-list" class="sub-method-container mt-3" style="display: none;">
+        <label class="small text-muted text-uppercase fw-bold mb-2 d-block">Select Card Provider</label>
+        <select name="card_type" class="form-select fancy-input py-2">
+            <option value="">-- Select Card --</option>
+            <option value="Visa">Visa Card</option>
+            <option value="Mastercard">Mastercard</option>
+            <option value="Paypal">Paypal</option>
+        </select>
+    </div>
+
+    @error('payment_method') <div class="text-danger small mt-2">{{ $message }}</div> @enderror
+
+    <div class="mt-5">
+        <button type="submit" class="btn btn-confirm w-100 text-uppercase fw-bold py-3">Confirm Order</button>
+        <p class="small text-muted italic text-center mt-3">Complimentary shipping on all orders.</p>
+    </div>
+</div>
+
         </div>
     </form>
     @endif
 </div>
 
 <style> 
-    /* Your Existing Styles */
     .invalid-feedback { display: block !important; height: 35px; line-height: 1; overflow: hidden; }
     .fancy-input { border: none; border-bottom: 1px solid #e0e0e0; border-radius: 0; padding: 12px 0; background: transparent !important; transition: border-color 0.4s; }
     .fancy-input:focus { box-shadow: none; border-bottom-color: #1a1a1a; }
@@ -152,7 +174,6 @@
     .btn-confirm:hover { background: #333; color:white; transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); }
     .watch-img-container { position: relative; overflow: hidden; background: #fff; border-color: #f0f0f0 !important; }
 
-    /* New Payment Styles */
     .payment-selection-grid { display: flex; flex-direction: column; gap: 12px; }
     .payment-card { cursor: pointer; width: 100%; }
     .payment-card input { display: none; }
@@ -176,6 +197,24 @@
     .payment-card input:checked + .card-content span { color: #1a1a1a; font-weight: 600; }
     
     .qty-control { display: inline-flex; align-items: center; }
+    .sub-method-container {
+    animation: fadeIn 0.4s ease;
+    padding: 15px;
+    background: #fdfaf5;
+    border: 1px dashed #b19470;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-select.fancy-input {
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 0;
+    font-size: 0.85rem;
+}
 </style>
 
 <script data-navigate-once>
@@ -240,14 +279,60 @@ document.addEventListener('livewire:navigated', function() {
         });
     };
 
-    const orderForm = document.getElementById('order-form');
-    if(orderForm) {
-        orderForm.addEventListener('submit', function() {
-            const btn = this.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> PROCESSING...';
-        });
+    window.toggleSubMethods = function(type) {
+    const bankList = document.getElementById('bank-list');
+    const cardList = document.getElementById('card-list');
+    
+    // Reset selections first
+    bankList.style.display = 'none';
+    cardList.style.display = 'none';
+    bankList.querySelector('select').value = "";
+    cardList.querySelector('select').value = "";
+
+    if (type === 'bank') {
+        bankList.style.display = 'block';
+    } else if (type === 'card') {
+        cardList.style.display = 'block';
     }
+}
+const orderForm = document.getElementById('order-form');
+if(orderForm) {
+    orderForm.addEventListener('submit', function(e) {
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+        const btn = this.querySelector('button[type="submit"]');
+
+        // ၁။ Main Payment Method ရွေးထားသလား စစ်မယ်
+        if(!paymentMethod) {
+            e.preventDefault(); 
+            alert('Please select a payment method.');
+            return;
+        }
+
+        // ၂။ Online Banking ရွေးထားရင် Bank Name ရွေးသလား စစ်မယ်
+        if(paymentMethod.value === 'online_banking') {
+            const bankName = document.querySelector('select[name="bank_name"]').value;
+            if(!bankName) {
+                e.preventDefault();
+                alert('Please select your Bank Name.');
+                return;
+            }
+        }
+
+        // ၃။ Card ရွေးထားရင် Card Type ရွေးသလား စစ်မယ်
+        if(paymentMethod.value === 'card') {
+            const cardType = document.querySelector('select[name="card_type"]').value;
+            if(!cardType) {
+                e.preventDefault();
+                alert('Please select your Card Type.');
+                return;
+            }
+        }
+
+        // အကုန်မှန်ကန်မှ Loading ပြပြီး Submit လုပ်မယ်
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> PROCESSING...';
+    });
+}
 });
 </script>
 @endsection

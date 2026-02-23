@@ -206,14 +206,11 @@ document.addEventListener('livewire:navigated', function () {
             .then(response => response.status === 401 ? Livewire.navigate("{{ route('login') }}") : response.json())
             .then(data => {
                 if (data && data.success) {
-                    // Update Badge
                     if (badge) {
                         badge.innerText = data.newCount;
                         badge.style.display = 'inline-block';
                         badge.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 200 });
                     }
-
-                    // Update Stock Logic
                     let currentMax = parseInt(qtyInput.getAttribute('max'));
                     let newStock = currentMax - requestedQty;
                     qtyInput.setAttribute('max', newStock);
@@ -221,7 +218,6 @@ document.addEventListener('livewire:navigated', function () {
                     const statusContainer = document.getElementById('stock-status-container');
 
                     if (newStock <= 0) {
-                        // REPLACEMENT: This literally removes the button from existence
                         if (statusContainer) {
                             statusContainer.innerHTML = `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-2">Out of Stock</span>`;
                         }

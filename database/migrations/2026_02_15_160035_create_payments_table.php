@@ -9,16 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
+    public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->string('method'); 
-            $table->string('status')->default('pending'); 
+            $table->string('method');
+            $table->string('bank_name')->nullable();
+            $table->string('account_number')->nullable();
+            $table->string('status')->default('pending');
             $table->string('transaction_id')->nullable();
             $table->decimal('amount', 15, 2);
-            $table->json('payload')->nullable(); 
+            $table->json('payload')->nullable();
             $table->timestamps();
         });
     }

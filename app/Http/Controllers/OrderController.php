@@ -136,7 +136,9 @@ class OrderController extends Controller
         $request->validate([
             'receiver_address' => 'required|string|max:255',
             'receiver_phone'   => 'required|string|max:20',
-            'payment_method'   => 'required|in:cod,online_banking,card'
+            'payment_method'   => 'required|in:cod,online_banking,card',
+            'bank_name'        => 'required_if:payment_method,online_banking',
+            'card_type'        => 'required_if:payment_method,card'
         ]);
 
         $userId = Auth::id();
@@ -145,14 +147,15 @@ class OrderController extends Controller
         if ($cartItems->isEmpty()) {
             return redirect()->back()->with('error', 'Your selection is empty.');
         }
+
         foreach ($cartItems as $checkItem) {
             if ($checkItem->product->product_quantity < $checkItem->quantity) {
                 $title = $checkItem->product->product_title;
                 $checkItem->delete();
-
                 return redirect()->back()->with('error', "Sorry, {$title} is out of stock and has been removed from your selection.");
             }
         }
+
         try {
             return DB::transaction(function () use ($request, $cartItems, $userId) {
                 $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
@@ -169,11 +172,14 @@ class OrderController extends Controller
                     'status'            => 'confirmed'
                 ]);
 
+                // --- ဒီနေရာမှာ bank_name logic ကို ထည့်လိုက်ပါ ---
                 $order->payment()->create([
-                    'method' => $request->payment_method,
-                    'amount' => $total,
-                    'status' => ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending',
+                    'method'    => $request->payment_method,
+                    'amount'    => $total,
+                    'status'    => ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending',
+                    'bank_name' => $request->bank_name ?? $request->card_type ?? null, // ဒီစာကြောင်းလေးပါ
                 ]);
+                // ------------------------------------------
 
                 foreach ($cartItems as $cartItem) {
                     OrderItem::create([

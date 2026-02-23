@@ -32,7 +32,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
+                    <form id="editProductForm" action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT') {{-- Required for Update --}}
 
@@ -150,6 +150,7 @@
 </div>
 
 <script>
+    
 let newFilesTracker = new DataTransfer(); // This holds the actual files to be sent to Laravel
 
 document.getElementById('imageInput').addEventListener('change', function(event) {

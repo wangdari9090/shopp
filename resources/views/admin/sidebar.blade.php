@@ -2,72 +2,43 @@
     <h4 class="text-center text-white mb-4 fw-bold pt-3">Admin Panel</h4>
 
     <ul class="nav flex-column px-2">
-
-        <!-- Dashboard -->
         <li class="nav-item mb-1">
-            <a class="nav-link text-white sidebar-link" href="{{ route('admin.dashboard') }}">
+            <a class="nav-link text-white sidebar-link ajax-link" href="{{ route('admin.dashboard') }}">
                 <i class="bi bi-speedometer2 me-2"></i> Dashboard
             </a>
         </li>
 
-        <!-- Category Dropdown -->
         <li class="nav-item mb-1">
             <a class="nav-link text-white sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#categoryMenu">
                 <i class="bi bi-tags me-2"></i> Categories
             </a>
-
             <ul class="collapse list-unstyled ps-4" id="categoryMenu">
-                <li><a href="{{ route('admin.categories.create') }}" class="dropdown-item-side">➤ Add Category</a></li>
-                <li><a href="{{ route('admin.categories.index') }}" class="dropdown-item-side">➤ View Categories</a></li>
+                <li><a href="{{ route('admin.categories.create') }}" class="dropdown-item-side ajax-link">➤ Add Category</a></li>
+                <li><a href="{{ route('admin.categories.index') }}" class="dropdown-item-side ajax-link">➤ View Categories</a></li>
             </ul>
         </li>
 
-        <!-- Users -->
-        {{-- <li class="nav-item mb-1">
-            <a class="nav-link text-white sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#usersMenu">
-                <i class="bi bi-people me-2"></i> Users
-            </a>
-            <ul class="collapse list-unstyled ps-4" id="usersMenu">
-                <li><a href="#" class="dropdown-item-side">➤ All Users</a></li>
-                <li><a href="#" class="dropdown-item-side">➤ Add User</a></li>
-            </ul>
-        </li> --}}
-
-        <!-- Products -->
         <li class="nav-item mb-1">
             <a class="nav-link text-white sidebar-link dropdown-toggle" data-bs-toggle="collapse" href="#productMenu">
                 <i class="bi bi-box-seam me-2"></i> Products
             </a>
             <ul class="collapse list-unstyled ps-4" id="productMenu">
-                <li><a href="{{ route('admin.products.create') }}" class="dropdown-item-side">➤ Add Product</a></li>
-                <li><a href="{{ route('admin.products.index') }}" class="dropdown-item-side">➤ View Products</a></li>
+                <li><a href="{{ route('admin.products.create') }}" class="dropdown-item-side ajax-link">➤ Add Product</a></li>
+                <li><a href="{{ route('admin.products.index') }}" class="dropdown-item-side ajax-link">➤ View Products</a></li>
             </ul>
         </li>
 
-        <!-- Orders -->
         <li class="nav-item mb-1">
-            <a class="nav-link text-white sidebar-link" href="{{ route('admin.orders.index') }}">
+            <a class="nav-link text-white sidebar-link ajax-link" href="{{ route('admin.orders.index') }}">
                 <i class="bi bi-basket me-2"></i> Orders
             </a>
         </li>
-        <li class="nav-item mb-1">
-    <a class="nav-link text-white sidebar-link" href="{{ route('admin.orders.index') }}" target="_self">
-        <i class="bi bi-basket me-2"></i> Orders
-    </a>
-</li>
-         <li class="nav-item mb-1">
-            <a class="nav-link text-white sidebar-link" href="{{ route('admin.orders.index') }}">
-                <i class="bi bi-speedometer2 me-2"></i> Dashboard
-            </a>
-        </li>
 
-        <!-- Logout -->
         <li class="nav-item mt-3 px-2">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="btn btn-danger w-100">Logout</button>
             </form>
         </li>
-
     </ul>
 </nav>

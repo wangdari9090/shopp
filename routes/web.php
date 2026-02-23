@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Success/Payment Page for Users
     Route::get('/payment/success/{order}/{method}', [OrderController::class, 'paymentProcess'])->name('payment.success');
+
+    Route::post('/payment/upload/{order}', [OrderController::class, 'uploadProof'])->name('payment.upload');
 });
 
 /*
@@ -75,7 +77,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
         // Order Management
         Route::get('/orders', 'viewOrders')->name('orders.index');
-        Route::patch('/orders/{id}/status', 'updateOrderStatus')->name('orders.updateStatus');
+        Route::post('/orders/{id}/status', 'updateOrderStatus')->name('orders.updateStatus');
         Route::post('/orders/{id}/confirm-payment', 'confirmPayment')->name('order.confirm-payment');
         Route::post('/orders/{id}/cancel', 'cancelOrder')->name('orders.cancel');
         Route::post('/orders/{id}/toggle-payment', 'togglePaymentStatus')->name('orders.togglePayment');

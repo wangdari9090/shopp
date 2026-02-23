@@ -18,7 +18,7 @@
     
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->is('admin/dashboard') ? 'active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}" class="nav-link ajax-link {{ request()->is('admin/dashboard') ? 'active' : '' }}">
                 <i class="bi bi-grid-1x2"></i>
                 <span>Dashboard</span>
             </a>
@@ -35,8 +35,8 @@
             </a>
             <div class="collapse" id="categoryMenu">
                 <ul class="nav flex-column submenu">
-                    <li><a href="{{ route('admin.categories.index') }}" class="nav-link"><i class="bi bi-list-ul"></i> View Categories</a></li>
-                    <li><a href="{{ route('admin.categories.create') }}" class="nav-link"><i class="bi bi-plus-circle"></i> Add Category</a></li>
+                    <li><a href="{{ route('admin.categories.index') }}" class="nav-link ajax-link"><i class="bi bi-list-ul"></i> View Categories</a></li>
+                    <li><a href="{{ route('admin.categories.create') }}" class="nav-link ajax-link"><i class="bi bi-plus-circle"></i> Add Category</a></li>
                 </ul>
             </div>
         </li>
@@ -52,14 +52,14 @@
             </a>
             <div class="collapse" id="productMenu">
                 <ul class="nav flex-column submenu">
-                    <li><a href="{{ route('admin.products.index') }}" class="nav-link"><i class="bi bi-list-ul"></i> View Products</a></li>
-                    <li><a href="{{ route('admin.products.create') }}" class="nav-link"><i class="bi bi-plus-circle"></i> Add Product</a></li>
+                    <li><a href="{{ route('admin.products.index') }}" class="nav-link ajax-link"><i class="bi bi-list-ul"></i> View Products</a></li>
+                    <li><a href="{{ route('admin.products.create') }}" class="nav-link ajax-link"><i class="bi bi-plus-circle"></i> Add Product</a></li>
                 </ul>
             </div>
         </li>
 
         <li class="nav-item">
-            <a href="{{ route('admin.orders.index') }}" class="nav-link">
+            <a href="{{ route('admin.orders.index') }}" class="nav-link ajax-link">
                 <i class="bi bi-bag-check"></i>
                 <span>Orders</span>
             </a>
@@ -67,37 +67,67 @@
     </ul>
 </nav>
 
-    <div id="main-wrapper">
-        <header class="top-bar">
-            <button id="toggleBtn">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="user-profile">
-                <div class="d-flex align-items-center gap-3">
-                    @auth
-                        {{-- Show User Name --}}
-                        <span class="fw-semibold text-dark small border-end pe-3 d-none d-md-inline">
-                            Hi, {{ Auth::user()->name }}
-                        </span>
-
-                        {{-- Direct Logout Button --}}
-                        <form action="{{ route('logout') }}" method="POST" class="m-0">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">LOGOUT
-                            </button>
-                        </form>
-                    @else
-                        <a href="{{ route('login.show') }}" class="btn btn-nav-theme px-4 rounded-pill fw-bold">Login</a>
-                    @endauth
-                </div>
+<div id="main-wrapper">
+    <header class="top-bar">
+        <button id="toggleBtn">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="user-profile">
+            <div class="d-flex align-items-center gap-3">
+                @auth
+                    <span class="fw-semibold text-dark small border-end pe-3 d-none d-md-inline">
+                        Hi, {{ Auth::user()->name }}
+                    </span>
+                    <form action="{{ route('logout') }}" method="POST" class="m-0">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold" style="font-size: 0.75rem;">LOGOUT</button>
+                    </form>
+                @else
+                    <a href="{{ route('login.show') }}" class="btn btn-nav-theme px-4 rounded-pill fw-bold">Login</a>
+                @endauth
             </div>
-        </header>
+        </div>
+    </header>
 
-        <main class="content-body">
-            @yield('content')
-        </main>
-    </div>
+    <main class="content-body">
+        @yield('content')
+    </main>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('click', function (e) {
+    const link = e.target.closest('.ajax-link');
+    if (link) {
+        e.preventDefault();
+        const url = link.getAttribute('href');
+        const contentArea = document.querySelector('.content-body');
+        if (!url || url === '#' || !contentArea) return;
+
+        fetch(url, {
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network error');
+            return response.text();
+        })
+        .then(html => {
+            contentArea.innerHTML = html;
+            contentArea.style.opacity = '1';
+            window.history.pushState({path: url}, '', url);
+            window.scrollTo(0, 0);
+        })
+        .catch(error => {
+            console.error('AJAX Error:', error);
+            window.location.href = url;
+        });
+    }
+});
+
+window.onpopstate = function() { location.reload(); };
+</script>
 </body>
 </html>
