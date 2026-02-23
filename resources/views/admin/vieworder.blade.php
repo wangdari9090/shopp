@@ -128,15 +128,6 @@
                 </li>
                 
                 <li><hr class="dropdown-divider"></li>
-                
-                <li>
-                    <form action="{{ route('admin.orders.cancel', $order->id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
-                        @csrf
-                        <button class="dropdown-item text-danger" type="submit">
-                            <i class="bi bi-trash me-2"></i>Cancel Order
-                        </button>
-                    </form>
-                </li>
             </ul>
         </div>
     </td>
@@ -236,7 +227,7 @@ document.addEventListener('change', function(e) {
         container.style.opacity = '0.5';
 
         fetch(`/admin/orders/${id}/status`, {
-            method: 'PATCH', 
+            method: 'POST', 
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -251,6 +242,10 @@ document.addEventListener('change', function(e) {
         .then(html => {
             container.innerHTML = html;
             container.style.opacity = '1';
+            const dropdowns = document.querySelectorAll('.dropdown-toggle');
+            dropdowns.forEach(dd => new bootstrap.Dropdown(dd));
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(m => new bootstrap.Modal(m));
         })
         .catch(error => {
             console.error('Error:', error);

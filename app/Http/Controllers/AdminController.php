@@ -142,9 +142,13 @@ class AdminController extends Controller
         ]);
 
         if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Product added successfully!']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Product added successfully!'
+            ]);
         }
-        return redirect()->back()->with('success', 'Product and Gallery added!');
+
+        return redirect()->route('admin.products.index')->with('success', 'Product added!');
     }
 
     public function deleteProduct($id)
@@ -202,13 +206,26 @@ class AdminController extends Controller
         $order = Order::findOrFail($id);
         $order->status = $request->status;
         $order->save();
-        $orders = Order::with(['user', 'items.product', 'payment'])
-            ->latest()
-            ->paginate(5);
+        $orders = Order::with(['items.product', 'user', 'payment'])->latest()->paginate(8);
         if ($request->ajax()) {
-            return view('admin.orders.index', compact('orders'))->render();
+            return $this->renderContent('admin.vieworder', compact('orders'));
         }
 
         return back()->with('success', 'Status updated!');
+    }
+    public function cancelOrder(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        $order->status = 'cancelled';
+        $order->save();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Order has been cancelled.'
+            ]);
+        }
+
+        return back()->with('success', 'Order cancelled successfully.');
     }
 }

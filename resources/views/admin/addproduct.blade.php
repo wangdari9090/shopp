@@ -39,7 +39,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+                    <form id="addProductForm" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="row g-4">
@@ -120,37 +120,83 @@
         </div>
     </div>
 </div>
-
 <script>
+// Image Preview Logic
 document.getElementById('imageInput').addEventListener('change', function(event) {
     const previewContainer = document.getElementById('imagePreview');
     const placeholder = document.getElementById('previewPlaceholder');
-    
     previewContainer.innerHTML = ''; 
-
     const files = event.target.files;
     if (files.length > 0) {
         [...files].forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const imgWrapper = document.createElement('div');
-                imgWrapper.classList.add('position-relative');
-                imgWrapper.innerHTML = `
-                    <img src="${e.target.result}" class="rounded shadow-sm border p-1 bg-white" 
-                         style="width: 110px; height: 110px; object-fit: cover;">
-                    <span class="badge bg-gold position-absolute top-0 start-0 m-1 shadow-sm" 
-                          style="color: var(--forest); border: 1px solid var(--forest);">${index + 1}</span>
-                `;
+                imgWrapper.className = 'position-relative';
+                imgWrapper.innerHTML = `<img src="${e.target.result}" class="rounded shadow-sm border p-1 bg-white" style="width: 110px; height: 110px; object-fit: cover;"><span class="badge bg-gold position-absolute top-0 start-0 m-1 shadow-sm" style="color: var(--forest); border: 1px solid var(--forest);">${index + 1}</span>`;
                 previewContainer.appendChild(imgWrapper);
             };
             reader.readAsDataURL(file);
         });
-    } else {
-        previewContainer.appendChild(placeholder);
-    }
+    } else { previewContainer.appendChild(placeholder); }
+});
+
+// AJAX Submission Logic
+document.getElementById('addProductForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const contentArea = document.querySelector('.content-body');
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+            // Handle Validation Errors (422)
+            if (response.status === 422) {
+                let errorMsg = Object.values(data.errors).flat().join('\n');
+                alert(errorMsg);
+            }
+            throw new Error(data.message || 'Server Error');
+        }
+        return data;
+    })
+    .then(data => {
+        if (data.success) {
+            // Redirect to Product Index via AJAX
+            fetch("{{ route('admin.products.index') }}", {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.text())
+            .then(html => {
+                contentArea.innerHTML = html;
+                window.history.pushState({}, '', "{{ route('admin.products.index') }}");
+                // Reset active state in sidebar manually if needed
+            });
+        }
+    })
+    .catch(error => {
+        console.error('AJAX Error:', error);
+    })
+    .finally(() => {
+        // This ensures the button returns to normal if saving fails
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-cloud-arrow-up me-1"></i> Save Product';
+    });
 });
 </script>
-
 <style>
     .bg-gold { background-color: var(--gold) !important; }
     .border-dashed { border-style: dashed !important; }
