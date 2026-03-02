@@ -7,9 +7,9 @@
         
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
             <h5 class="mb-0 fw-bold" style="color: var(--forest);">Product Inventory</h5>
-            <a href="{{ route('admin.products.create') }}" class="btn btn-gold px-4">
+            {{-- <a href="{{ route('admin.products.create') }}" class="btn btn-gold px-4">
                 <i class="bi bi-plus-lg me-1"></i> Add Product
-            </a>
+            </a> --}}
         </div>
 
         <div class="card-body">

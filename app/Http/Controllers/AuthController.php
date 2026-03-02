@@ -19,68 +19,78 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-   public function register(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:8|confirmed',
-    ]);
-
-    $user = User::create([
-        'name' => $validated['name'],
-        'email' => $validated['email'],
-        'password' => Hash::make($validated['password']),
-        'role' => 'user',
-    ]);
-
-    Auth::login($user);
-
-    // Check if the request is AJAX
-    if ($request->ajax() || $request->wantsJson()) {
-        return response()->json([
-            'success' => true,
-            'redirect' => route('login') 
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
         ]);
-    }
 
-    return redirect()->route('index');
-}
-public function login(Request $request)
-{
-    $credentials = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-    
-    $remember = $request->has('remember');if (Auth::attempt($credentials, $remember)) { 
-        $request->session()->regenerate();
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'user',
+        ]);
+
+        Auth::login($user);
+
+        // Check if the request is AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('login')
+            ]);
+        }
+
+        return redirect()->route('index');
+    }
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $remember = $request->has('remember');
+        if (Auth::attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+
+            $user = Auth::user();
+
+            $redirectPath = ($user->role === 'admin')
+                ? route('admin.dashboard')
+                : route('index');
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'redirect' => $redirectPath
+                ]);
+            }
+            if ($user->role !== 'admin') {
+                $request->session()->forget('url.intended');
+                return redirect()->route('index');
+            }
+
+            return redirect()->intended($redirectPath);
+        }
 
         if ($request->ajax()) {
             return response()->json([
-                'success' => true, 
-                'redirect' => route('index') 
-            ]);
+                'errors' => [
+                    'email' => ['These credentials do not match our records.']
+                ]
+            ], 422);
         }
-        return redirect()->intended('/');
-    }
 
-    // If login fails
-    if ($request->ajax()) {
-        return response()->json([
-            'errors' => [
-                'email' => ['These credentials do not match our records.']
-            ]
-        ], 422); // 422 is the Unprocessable Entity status code
+        return back()->withErrors(['email' => 'Invalid credentials.']);
     }
-
-    return back()->withErrors(['email' => 'Invalid credentials.']);
-}
 
 
     public function dashboard()
     {
-        // Example: count users for dashboard
         $userCount = User::count();
 
         return view('admin.dashboard', compact('userCount'));
@@ -89,13 +99,13 @@ public function login(Request $request)
     /**
      * Handle logout
      */
-public function logout(Request $request)
-{
-    Auth::logout();
+    public function logout(Request $request)
+    {
+        Auth::logout();
 
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-    return redirect()->route('index');
-}
+        return redirect()->route('index');
+    }
 }

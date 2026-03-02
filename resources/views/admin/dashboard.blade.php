@@ -67,7 +67,6 @@
             <div class="table-container shadow-sm border-0">
                 <div class="p-4 d-flex justify-content-between align-items-center border-bottom">
                     <h5 class="fw-bold m-0" style="color: var(--forest);">Recent Acquisitions</h5>
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm text-white px-3" style="background: var(--forest);">View All</a>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-luxury m-0">

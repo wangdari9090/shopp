@@ -89,14 +89,15 @@
         </div>
     </td>
     <td class="text-center" style="width: 140px;">
-        <select class="status-updater no-arrow form-select form-select-sm fw-bold border-0 
-                {{ $order->status == 'pending' ? 'status-pending' : '' }}
-                {{ $order->status == 'confirmed' ? 'status-confirmed' : '' }}
-                {{ $order->status == 'out_for_delivery' ? 'status-shipped' : '' }}
-                {{ $order->status == 'delivered' ? 'status-delivered' : '' }}
-                {{ $order->status == 'cancelled' ? 'status-cancelled' : '' }}" 
-                data-id="{{ $order->id }}"
-                style="border-radius: 6px; cursor: pointer; font-size: 0.7rem; height: 28px; padding: 2px 8px;">
+<select class="status-updater no-arrow form-select form-select-sm fw-bold border-0 
+    @if($order->status == 'pending') status-pending 
+    @elseif($order->status == 'confirmed') status-confirmed 
+    @elseif($order->status == 'out_for_delivery') status-shipped 
+    @elseif($order->status == 'delivered') status-delivered 
+    @elseif($order->status == 'cancelled') status-cancelled 
+    @endif" 
+    data-id="{{ $order->id }}"
+    style="border-radius: 6px; cursor: pointer; font-size: 0.7rem; height: 28px; padding: 2px 8px;">
             
             <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>⏳ Processing</option>
             <option value="confirmed" {{ $order->status == 'confirmed' ? 'selected' : '' }}>📦 Confirmed</option>

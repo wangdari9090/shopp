@@ -126,8 +126,10 @@ class OrderController extends Controller
         $order = Order::with(['payment', 'items.product'])->findOrFail($orderId);
 
         if ($order->user_id !== auth()->id()) {
-            abort(403);
+            return redirect()->route('orders.index')
+                ->with('error', "Hold on! You don't have permission to view that order.");
         }
+
         return view('payment.success', compact('order', 'method'));
     }
 

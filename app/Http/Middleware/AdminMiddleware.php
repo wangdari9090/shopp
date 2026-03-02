@@ -16,8 +16,13 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-         if (!Auth::check() || Auth::user()->user_type !== 'admin') {
-            abort(403, 'Unauthorized');
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        if (Auth::user()->user_type !== 'admin') {
+            return redirect()->route('home')
+                ->with('error', 'Access Denied: This area is for administrators only.');
         }
 
         return $next($request);

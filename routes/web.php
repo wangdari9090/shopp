@@ -45,8 +45,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Success/Payment Page for Users
     Route::get('/payment/success/{order}/{method}', [OrderController::class, 'paymentProcess'])->name('payment.success');
-
-    Route::post('/payment/upload/{order}', [OrderController::class, 'uploadProof'])->name('payment.upload');
 });
 
 /*
