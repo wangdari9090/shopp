@@ -78,11 +78,18 @@
 </body>
 </html>
 <script>
-  document.addEventListener('livewire:navigated', () => { 
+    document.addEventListener('livewire:navigated', () => { 
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
     });
+
+    @auth
+    // Presence Heartbeat
+    setInterval(function() {
+        $.post("{{ route('heartbeat') }}");
+    }, 60000); // Send heartbeat every 60 seconds
+    @endauth
 </script>

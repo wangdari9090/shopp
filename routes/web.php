@@ -45,6 +45,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Success/Payment Page for Users
     Route::get('/payment/success/{order}/{method}', [OrderController::class, 'paymentProcess'])->name('payment.success');
+
+    // Presence Heartbeat
+    Route::post('/heartbeat', function () {
+        return response()->json(['status' => 'alive']);
+    })->name('heartbeat');
 });
 
 /*
