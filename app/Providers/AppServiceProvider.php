@@ -28,11 +28,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
-        // Clear stale carts (those inactive for > 5 minutes)
-        // This ensures the logic works even without a background scheduler
         $threshold = now()->subMinutes(5)->timestamp;
-        
-        \App\Models\ProductCart::whereIn('user_id', function ($query) use ($threshold) {
+
+        ProductCart::whereIn('user_id', function ($query) use ($threshold) {
             $query->select('id')
                 ->from('users')
                 ->whereNotExists(function ($subQuery) use ($threshold) {
@@ -52,9 +50,5 @@ class AppServiceProvider extends ServiceProvider
             $view->with('globalCartCount', $cartCount);
         });
 
-        // Clear their previous "stale" cart, when user login in again
-        // Event::listen(Login::class, function ($event) {
-        //         ProductCart::where('user_id', $event->user->id)->delete();
-        //     });
     }
 }

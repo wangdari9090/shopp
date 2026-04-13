@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ProductCart;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -14,18 +15,24 @@ class OrderController extends Controller
 {
     public function addToCart(Request $request, $id)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1'
-        ]);
+        $product = \App\Models\Product::findOrFail($id);
+        $qtyToAdd = (int) $request->input('quantity', 1);
 
-        $qtyToAdd = $request->input('quantity', 1);
-
-        $cartItem = ProductCart::where('user_id', Auth::id())
+        $alreadyInCart = ProductCart::where('user_id', Auth::id())
             ->where('product_id', $id)
             ->first();
 
-        if ($cartItem) {
-            $cartItem->increment('quantity', $qtyToAdd);
+        $currentCartQty = $alreadyInCart ? $alreadyInCart->quantity : 0;
+
+        if (($currentCartQty + $qtyToAdd) > $product->product_quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Not enough stock available.'
+            ], 422);
+        }
+
+        if ($alreadyInCart) {
+            $alreadyInCart->increment('quantity', $qtyToAdd);
         } else {
             ProductCart::create([
                 'user_id' => Auth::id(),
@@ -34,16 +41,34 @@ class OrderController extends Controller
             ]);
         }
 
-        $newCount = ProductCart::where('user_id', Auth::id())->sum('quantity');
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'newCount' => $newCount
-            ]);
+        $newVirtualStock = $product->product_quantity - ($currentCartQty + $qtyToAdd);
+
+        return response()->json([
+            'success' => true,
+            'newCount' => ProductCart::where('user_id', Auth::id())->sum('quantity'),
+            'virtualStock' => $newVirtualStock
+        ]);
+    }
+    public function show($id)
+    {
+        $product = Product::findOrFail($id);
+
+        $related = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $id)
+            ->take(4)
+            ->get();
+
+        $inCart = 0;
+        if (auth()->check()) {
+            $inCart = ProductCart::where('user_id', auth()->id())
+                ->where('product_id', $id)
+                ->value('quantity') ?? 0;
         }
 
-        return redirect()->back()->with('success', 'Selection updated.');
+        $availableStock = $product->product_quantity - $inCart;
+
+        return view('product_details', compact('product', 'related', 'availableStock'));
     }
 
     public function viewCart()
@@ -74,7 +99,11 @@ class OrderController extends Controller
             if ($cartItem->quantity < $cartItem->product->product_quantity) {
                 $cartItem->increment('quantity');
             } else {
-                return response()->json(['success' => false, 'message' => 'Maximum stock reached'], 400);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'MAX STOCK REACHED',
+                    'limit' => $cartItem->product->product_quantity
+                ], 422);
             }
         } elseif ($action === 'reduce') {
             if ($cartItem->quantity > 1) {
@@ -137,10 +166,10 @@ class OrderController extends Controller
     {
         $request->validate([
             'receiver_address' => 'required|string|max:255',
-            'receiver_phone'   => 'required|string|max:20',
-            'payment_method'   => 'required|in:cod,online_banking,card',
-            'bank_name'        => 'required_if:payment_method,online_banking',
-            'card_type'        => 'required_if:payment_method,card'
+            'receiver_phone' => 'required|string|max:20',
+            'payment_method' => 'required|in:cod,online_banking,card',
+            'bank_name' => 'required_if:payment_method,online_banking',
+            'card_type' => 'required_if:payment_method,card'
         ]);
 
         $userId = Auth::id();
@@ -162,33 +191,31 @@ class OrderController extends Controller
             return DB::transaction(function () use ($request, $cartItems, $userId) {
                 $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
                 $lastOrder = Order::where('user_id', $userId)->latest('id')->first();
-                $nextNumber = $lastOrder ? (int)$lastOrder->user_order_number + 1 : 1;
+                $nextNumber = $lastOrder ? (int) $lastOrder->user_order_number + 1 : 1;
 
                 $order = Order::create([
-                    'user_id'           => $userId,
+                    'user_id' => $userId,
                     'user_order_number' => $nextNumber,
-                    'receiver_address'  => $request->receiver_address,
-                    'receiver_phone'    => $request->receiver_phone,
-                    'total_price'       => $total,
-                    'payment_method'    => $request->payment_method,
-                    'status'            => 'confirmed'
+                    'receiver_address' => $request->receiver_address,
+                    'receiver_phone' => $request->receiver_phone,
+                    'total_price' => $total,
+                    'payment_method' => $request->payment_method,
+                    'status' => 'confirmed'
                 ]);
 
-                // --- ဒီနေရာမှာ bank_name logic ကို ထည့်လိုက်ပါ ---
                 $order->payment()->create([
-                    'method'    => $request->payment_method,
-                    'amount'    => $total,
-                    'status'    => ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending',
-                    'bank_name' => $request->bank_name ?? $request->card_type ?? null, // ဒီစာကြောင်းလေးပါ
+                    'method' => $request->payment_method,
+                    'amount' => $total,
+                    'status' => ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending',
+                    'bank_name' => $request->bank_name ?? $request->card_type ?? null,
                 ]);
-                // ------------------------------------------
 
                 foreach ($cartItems as $cartItem) {
                     OrderItem::create([
-                        'order_id'   => $order->id,
+                        'order_id' => $order->id,
                         'product_id' => $cartItem->product_id,
-                        'quantity'   => $cartItem->quantity,
-                        'price'      => $cartItem->product->product_price,
+                        'quantity' => $cartItem->quantity,
+                        'price' => $cartItem->product->product_price,
                     ]);
                     $cartItem->product->decrement('product_quantity', $cartItem->quantity);
                     $cartItem->delete();

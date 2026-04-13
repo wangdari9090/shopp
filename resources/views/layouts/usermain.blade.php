@@ -87,9 +87,8 @@
     });
 
     @auth
-    // Presence Heartbeat
     setInterval(function() {
         $.post("{{ route('heartbeat') }}");
-    }, 60000); // Send heartbeat every 60 seconds
+    }, 60000);
     @endauth
 </script>

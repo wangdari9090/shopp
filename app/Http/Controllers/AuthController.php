@@ -36,7 +36,6 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        // Check if the request is AJAX
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
