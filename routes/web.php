@@ -38,6 +38,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/view_cart', [OrderController::class, 'viewCart'])->name('cart.index');
     Route::post('/add_to_cart/{id}', [OrderController::class, 'addToCart'])->name('add_to_cart');
     Route::post('/confirm_order', [OrderController::class, 'confirmOrder'])->name('order.confirm');
+    Route::get('/checkout/review', [OrderController::class, 'reviewOrder'])->name('order.review');
+    Route::post('/checkout/finalize', [OrderController::class, 'finalizeOrder'])->name('order.finalize');
 
     // JS/AJAX Cart Updates
     Route::post('/cart/update/{id}', [OrderController::class, 'updateQuantity'])->name('cart.js.update');
@@ -46,10 +48,6 @@ Route::middleware(['auth'])->group(function () {
     // Success/Payment Page for Users
     Route::get('/payment/success/{order}/{method}', [OrderController::class, 'paymentProcess'])->name('payment.success');
 
-    // Presence Heartbeat
-    Route::post('/heartbeat', function () {
-        return response()->json(['status' => 'alive']);
-    })->name('heartbeat');
 });
 
 /*

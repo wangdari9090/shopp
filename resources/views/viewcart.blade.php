@@ -119,13 +119,13 @@
                     </div>
 
                     {{-- 3. Payment Method Column --}}
-                    <div class="col-lg-4 border-start px-lg-4">
-                        <h6 class="serif mb-4 text-uppercase tracking-widest">Payment Method</h6>
+                    <div class="col-lg-4 border-start px-lg-4 position-relative">
 
-                        <div id="payment-error-msg" class="text-danger small serif italic mb-3 text-center"
-                            style="display: none; animation: fadeIn 0.3s;">
+                        <div id="payment-error-msg" class="text-danger small serif italic mb-5 text-center w-100"
+                            style="display: none; position: absolute; top: -30px; left: 0; animation: fadeIn 0.3s;">
                             <i class="bi bi-exclamation-circle me-1"></i> Please select a payment method to continue.
                         </div>
+                        <h6 class="serif mb-4 text-uppercase tracking-widest">Payment Method</h6>
 
                         <div class="payment-selection-grid">
                             <label class="payment-card">

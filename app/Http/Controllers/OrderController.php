@@ -15,7 +15,7 @@ class OrderController extends Controller
 {
     public function addToCart(Request $request, $id)
     {
-        $product = \App\Models\Product::findOrFail($id);
+        $product = Product::findOrFail($id);
         $qtyToAdd = (int) $request->input('quantity', 1);
 
         $alreadyInCart = ProductCart::where('user_id', Auth::id())
@@ -166,13 +166,13 @@ class OrderController extends Controller
     {
         $request->validate([
             'receiver_address' => 'required|string|max:255',
-            'receiver_phone' => 'required|string|max:20',
-            'payment_method' => 'required|in:cod,online_banking,card',
-            'bank_name' => 'required_if:payment_method,online_banking',
-            'card_type' => 'required_if:payment_method,card'
+            'receiver_phone'   => 'required|string|max:20',
+            'payment_method'   => 'required|in:cod,online_banking,card',
+            'bank_name'        => 'required_if:payment_method,online_banking',
+            'card_type'        => 'required_if:payment_method,card'
         ]);
 
-        $userId = Auth::id();
+        $userId    = Auth::id();
         $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
 
         if ($cartItems->isEmpty()) {
@@ -182,50 +182,105 @@ class OrderController extends Controller
         foreach ($cartItems as $checkItem) {
             if ($checkItem->product->product_quantity < $checkItem->quantity) {
                 $title = $checkItem->product->product_title;
-                $checkItem->delete();
+                ProductCart::find($checkItem->id)?->delete();
                 return redirect()->back()->with('error', "Sorry, {$title} is out of stock and has been removed from your selection.");
             }
         }
 
+        // Store checkout details in session — order is NOT created yet
+        session([
+            'pending_order' => [
+                'receiver_address' => $request->receiver_address,
+                'receiver_phone'   => $request->receiver_phone,
+                'payment_method'   => $request->payment_method,
+                'bank_name'        => $request->bank_name,
+                'card_type'        => $request->card_type,
+            ]
+        ]);
+
+        return redirect()->route('order.review');
+    }
+
+    public function reviewOrder()
+    {
+        $pending = session('pending_order');
+
+        if (!$pending) {
+            return redirect()->route('cart.index')->with('error', 'No pending order found. Please fill in your details again.');
+        }
+
+        $userId    = Auth::id();
+        $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
+
+        if ($cartItems->isEmpty()) {
+            session()->forget('pending_order');
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        }
+
+        $total      = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
+        $lastOrder  = Order::where('user_id', $userId)->latest('id')->first();
+        $nextNumber = $lastOrder ? (int) $lastOrder->user_order_number + 1 : 1;
+        $method     = $pending['payment_method'];
+
+        return view('payment.success', compact('total', 'nextNumber', 'method'));
+    }
+
+    public function finalizeOrder(Request $request)
+    {
+        $userId  = Auth::id();
+        $pending = session('pending_order');
+
+        if (!$pending) {
+            return response()->json(['success' => false, 'message' => 'Session expired. Please go back and try again.'], 422);
+        }
+
+        $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Your cart is empty.'], 422);
+        }
+
         try {
-            return DB::transaction(function () use ($request, $cartItems, $userId) {
-                $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
-                $lastOrder = Order::where('user_id', $userId)->latest('id')->first();
+            DB::transaction(function () use ($pending, $cartItems, $userId, $request) {
+                $total      = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
+                $lastOrder  = Order::where('user_id', $userId)->latest('id')->first();
                 $nextNumber = $lastOrder ? (int) $lastOrder->user_order_number + 1 : 1;
 
                 $order = Order::create([
-                    'user_id' => $userId,
+                    'user_id'           => $userId,
                     'user_order_number' => $nextNumber,
-                    'receiver_address' => $request->receiver_address,
-                    'receiver_phone' => $request->receiver_phone,
-                    'total_price' => $total,
-                    'payment_method' => $request->payment_method,
-                    'status' => 'confirmed'
+                    'receiver_address'  => $pending['receiver_address'],
+                    'receiver_phone'    => $pending['receiver_phone'],
+                    'total_price'       => $total,
+                    'payment_method'    => $pending['payment_method'],
+                    'status'            => 'confirmed',
                 ]);
 
                 $order->payment()->create([
-                    'method' => $request->payment_method,
-                    'amount' => $total,
-                    'status' => ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending',
-                    'bank_name' => $request->bank_name ?? $request->card_type ?? null,
+                    'method'         => $pending['payment_method'],
+                    'amount'         => $total,
+                    'status'         => ($pending['payment_method'] === 'cod') ? 'awaiting_delivery' : 'pending',
+                    'bank_name'      => $pending['bank_name'] ?? $pending['card_type'] ?? null,
+                    'transaction_id' => $request->input('transaction_reference'),
                 ]);
 
                 foreach ($cartItems as $cartItem) {
                     OrderItem::create([
-                        'order_id' => $order->id,
+                        'order_id'   => $order->id,
                         'product_id' => $cartItem->product_id,
-                        'quantity' => $cartItem->quantity,
-                        'price' => $cartItem->product->product_price,
+                        'quantity'   => $cartItem->quantity,
+                        'price'      => $cartItem->product->product_price,
                     ]);
                     $cartItem->product->decrement('product_quantity', $cartItem->quantity);
                     $cartItem->delete();
                 }
 
-                return redirect()->route('payment.success', ['order' => $order->id, 'method' => $request->payment_method])
-                    ->with('success', 'Order Placed!');
+                session()->forget('pending_order');
             });
+
+            return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
+            return response()->json(['success' => false, 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
     }
 }

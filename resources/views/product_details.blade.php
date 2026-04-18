@@ -209,15 +209,8 @@
                                     if (statusContainer) {
                                         statusContainer.innerHTML = `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-2">Out of Stock</span>`;
                                     }
-                                    form.innerHTML = `
-                                                        <div class="d-flex align-items-center gap-2 opacity-50" style="cursor: not-allowed;">
-                                                            <div class="input-group input-group-sm border rounded bg-light" style="width: 110px;">
-                                                                <button class="btn btn-link text-muted px-2 disabled" type="button"><i class="bi bi-dash"></i></button>
-                                                                <input type="text" class="form-control border-0 text-center bg-transparent p-0" value="0" disabled>
-                                                                <button class="btn btn-link text-muted px-2 disabled" type="button"><i class="bi bi-plus"></i></button>
-                                                            </div>
-                                                            <button class="btn btn-secondary btn-sm fw-bold text-uppercase px-3 py-2 disabled">Sold Out</button>
-                                                        </div>`;
+                                    // Simply set quantity to 0 to show limit reached, but don't wipe the HTML
+                                    qtyInput.value = 0;
                                 } else {
                                     qtyInput.value = 1;
                                     if (statusContainer && newStock <= 10) {
