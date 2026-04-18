@@ -22,7 +22,6 @@ class UserController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $count = Auth::check() ? ProductCart::where('user_id', Auth::id())->count() : 0;
 
         $products = Product::paginate(4)->fragment('best-seller-sections');
 
@@ -51,7 +50,7 @@ class UserController extends Controller
         $newArrivals = Product::where('created_at', '>=', now()->subDays(7))->paginate(8)->fragment('new-arrivals');
         $categories = Category::all();
 
-        return view('index', compact('products', 'count', 'categories', 'popularProducts', 'newArrivals'));
+        return view('index', compact('products', 'categories', 'popularProducts', 'newArrivals'));
     }
     public function dashboard()
     {
@@ -77,12 +76,7 @@ class UserController extends Controller
     }
     public function contact()
     {
-        if (Auth::check() && Auth::user()->user_type == 'user') {
-            $count = ProductCart::where('user_id', Auth::id())->count();
-        } else {
-            $count = 0;
-        }
-        return view('contact', compact('count'));
+        return view('contact');
     }
 
     public function categoryProducts(Request $request, $id)
@@ -90,15 +84,7 @@ class UserController extends Controller
         $category = Category::findOrFail($id);
         $products = $category->products()->paginate(12);
 
-        $count = (Auth::check() && Auth::user()->user_type == 'user')
-            ? ProductCart::where('user_id', Auth::id())->sum('quantity')
-            : 0;
-
-        if ($request->ajax()) {
-            return view('partials.product_grid_items', compact('products'))->render();
-        }
-
-        return view('category_products', compact('category', 'products', 'count'));
+        return view('category_products', compact('category', 'products'));
     }
     public function productDetails($id)
     {

@@ -190,8 +190,7 @@
                     document.getElementById('page-title').innerText = 'Order Confirmed';
 
                     // Clear cart badge
-                    const badge = document.getElementById('cart-count');
-                    if (badge) { badge.innerText = '0'; badge.style.display = 'none'; }
+                    if (window.updateCartBadge) window.updateCartBadge(0);
                 } else {
                     btn.disabled = false;
                     btn.innerHTML = origText;

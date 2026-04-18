@@ -36,7 +36,6 @@
                         <a class="nav-link custom-nav-link" wire:navigate href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        {{-- REMOVED wire:navigate here because it is an internal anchor --}}
                         <a class="nav-link custom-nav-link" href="#best-seller-section">Shop</a>
                     </li>
                     <li class="nav-item">
@@ -54,7 +53,6 @@
                             {{ $globalCartCount }}
                         </span>
                     </a>
-
                     @auth
                         <span class="fw-semibold text-dark small border-end pe-3 d-none d-md-inline">
                             Hi, {{ Auth::user()->name }}
@@ -84,34 +82,52 @@
 
     @livewireScripts
     @stack('scripts')
+
+    <script>
+        function updateCartBadge(count) {
+            const badge = document.getElementById('cart-count');
+            localStorage.setItem('cart_count', count);
+
+            if (badge) {
+                badge.innerText = count;
+                if (parseInt(count) > 0) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        document.addEventListener('livewire:navigated', () => {
+            const savedCount = localStorage.getItem('cart_count');
+            if (savedCount !== null) {
+                const badge = document.getElementById('cart-count');
+                if (badge) {
+                    badge.innerText = savedCount;
+                    badge.style.display = (parseInt(savedCount) > 0) ? 'inline-block' : 'none';
+                }
+            }
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+        });
+
+        if (localStorage.getItem('cart_count') === null) {
+            localStorage.setItem('cart_count', '{{ $globalCartCount }}');
+        }
+
+        @guest
+            localStorage.removeItem('cart_count');
+        @endguest
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'cart_updated' || event.key === 'cart_count') {
+                updateCartBadge(event.newValue);
+            }
+        });
+    </script>
 </body>
 
 </html>
-<script>
-    function updateCartBadge(count) {
-        const badge = document.getElementById('cart-count');
-        if (badge) {
-            badge.innerText = count;
-            if (parseInt(count) > 0) {
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-    }
-
-    document.addEventListener('livewire:navigated', () => {
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-    });
-
-    // Listen for internal cart updates from other tabs
-    window.addEventListener('storage', (event) => {
-        if (event.key === 'cart_updated') {
-            updateCartBadge(event.newValue);
-        }
-    });
-</script>

@@ -363,9 +363,7 @@
                             document.getElementById('subtotal-val').innerText = data.newSubtotal;
                             document.getElementById('total-due').innerText = data.newSubtotal;
                             document.getElementById('total-count').innerText = data.newCount;
-
-                            const badge = document.getElementById('cart-count');
-                            if (badge) badge.innerText = data.newCount;
+                            if (window.updateCartBadge) window.updateCartBadge(data.newCount);
                         } else {
                             alert(data.message);
                         }
@@ -389,6 +387,7 @@
                             document.getElementById('subtotal-val').innerText = data.newSubtotal;
                             document.getElementById('total-due').innerText = data.newSubtotal;
                             document.getElementById('total-count').innerText = data.newCount;
+                            if (window.updateCartBadge) window.updateCartBadge(data.newCount);
                             if (data.newCount == 0) location.reload();
                         }
                     });

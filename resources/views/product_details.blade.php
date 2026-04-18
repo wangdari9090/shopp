@@ -194,10 +194,12 @@
                         .then(response => response.status === 401 ? Livewire.navigate("{{ route('login') }}") : response.json())
                         .then(data => {
                             if (data && data.success) {
-                                if (badge) {
-                                    badge.innerText = data.newCount;
-                                    badge.style.display = 'inline-block';
-                                    badge.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 200 });
+                                if (window.updateCartBadge) {
+                                    window.updateCartBadge(data.newCount);
+                                    const badge = document.getElementById('cart-count');
+                                    if (badge) {
+                                        badge.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 200 });
+                                    }
                                 }
                                 let currentMax = parseInt(qtyInput.getAttribute('max'));
                                 let newStock = currentMax - requestedQty;

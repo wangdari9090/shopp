@@ -75,7 +75,7 @@ class OrderController extends Controller
     {
         if (Auth::check()) {
             $cart = ProductCart::where('user_id', Auth::id())->with('product')->get();
-            $count = $cart->count();
+            $count = $cart->sum('quantity');
 
             $subtotal = 0;
             foreach ($cart as $item) {
