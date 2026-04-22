@@ -166,13 +166,13 @@ class OrderController extends Controller
     {
         $request->validate([
             'receiver_address' => 'required|string|max:255',
-            'receiver_phone'   => 'required|string|max:20',
-            'payment_method'   => 'required|in:cod,online_banking,card',
-            'bank_name'        => 'required_if:payment_method,online_banking',
-            'card_type'        => 'required_if:payment_method,card'
+            'receiver_phone' => 'required|string|max:20',
+            'payment_method' => 'required|in:cod,online_banking,card',
+            'bank_name' => 'required_if:payment_method,online_banking',
+            'card_type' => 'required_if:payment_method,card'
         ]);
 
-        $userId    = Auth::id();
+        $userId = Auth::id();
         $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
 
         if ($cartItems->isEmpty()) {
@@ -191,10 +191,10 @@ class OrderController extends Controller
         session([
             'pending_order' => [
                 'receiver_address' => $request->receiver_address,
-                'receiver_phone'   => $request->receiver_phone,
-                'payment_method'   => $request->payment_method,
-                'bank_name'        => $request->bank_name,
-                'card_type'        => $request->card_type,
+                'receiver_phone' => $request->receiver_phone,
+                'payment_method' => $request->payment_method,
+                'bank_name' => $request->bank_name,
+                'card_type' => $request->card_type,
             ]
         ]);
 
@@ -209,7 +209,7 @@ class OrderController extends Controller
             return redirect()->route('cart.index')->with('error', 'No pending order found. Please fill in your details again.');
         }
 
-        $userId    = Auth::id();
+        $userId = Auth::id();
         $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
 
         if ($cartItems->isEmpty()) {
@@ -217,17 +217,17 @@ class OrderController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $total      = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
-        $lastOrder  = Order::where('user_id', $userId)->latest('id')->first();
+        $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
+        $lastOrder = Order::where('user_id', $userId)->latest('id')->first();
         $nextNumber = $lastOrder ? (int) $lastOrder->user_order_number + 1 : 1;
-        $method     = $pending['payment_method'];
+        $method = $pending['payment_method'];
 
         return view('payment.success', compact('total', 'nextNumber', 'method'));
     }
 
     public function finalizeOrder(Request $request)
     {
-        $userId  = Auth::id();
+        $userId = Auth::id();
         $pending = session('pending_order');
 
         if (!$pending) {
@@ -242,34 +242,34 @@ class OrderController extends Controller
 
         try {
             DB::transaction(function () use ($pending, $cartItems, $userId, $request) {
-                $total      = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
-                $lastOrder  = Order::where('user_id', $userId)->latest('id')->first();
+                $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
+                $lastOrder = Order::where('user_id', $userId)->latest('id')->first();
                 $nextNumber = $lastOrder ? (int) $lastOrder->user_order_number + 1 : 1;
 
                 $order = Order::create([
-                    'user_id'           => $userId,
+                    'user_id' => $userId,
                     'user_order_number' => $nextNumber,
-                    'receiver_address'  => $pending['receiver_address'],
-                    'receiver_phone'    => $pending['receiver_phone'],
-                    'total_price'       => $total,
-                    'payment_method'    => $pending['payment_method'],
-                    'status'            => 'confirmed',
+                    'receiver_address' => $pending['receiver_address'],
+                    'receiver_phone' => $pending['receiver_phone'],
+                    'total_price' => $total,
+                    'payment_method' => $pending['payment_method'],
+                    'status' => 'confirmed',
                 ]);
 
                 $order->payment()->create([
-                    'method'         => $pending['payment_method'],
-                    'amount'         => $total,
-                    'status'         => ($pending['payment_method'] === 'cod') ? 'awaiting_delivery' : 'pending',
-                    'bank_name'      => $pending['bank_name'] ?? $pending['card_type'] ?? null,
+                    'method' => $pending['payment_method'],
+                    'amount' => $total,
+                    'status' => ($pending['payment_method'] === 'cod') ? 'awaiting_delivery' : 'pending',
+                    'bank_name' => $pending['bank_name'] ?? $pending['card_type'] ?? null,
                     'transaction_id' => $request->input('transaction_reference'),
                 ]);
 
                 foreach ($cartItems as $cartItem) {
                     OrderItem::create([
-                        'order_id'   => $order->id,
+                        'order_id' => $order->id,
                         'product_id' => $cartItem->product_id,
-                        'quantity'   => $cartItem->quantity,
-                        'price'      => $cartItem->product->product_price,
+                        'quantity' => $cartItem->quantity,
+                        'price' => $cartItem->product->product_price,
                     ]);
                     $cartItem->product->decrement('product_quantity', $cartItem->quantity);
                     $cartItem->delete();

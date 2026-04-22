@@ -31,7 +31,7 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'user',
+            'user_type' => 'user',
         ]);
 
         Auth::login($user);
@@ -58,7 +58,7 @@ class AuthController extends Controller
 
             $user = Auth::user();
 
-            $redirectPath = ($user->role === 'admin')
+            $redirectPath = ($user->user_type === 'admin')
                 ? route('admin.dashboard')
                 : route('index');
 
@@ -68,7 +68,7 @@ class AuthController extends Controller
                     'redirect' => $redirectPath
                 ]);
             }
-            if ($user->role !== 'admin') {
+            if ($user->user_type !== 'admin') {
                 $request->session()->forget('url.intended');
                 return redirect()->route('index');
             }

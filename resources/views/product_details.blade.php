@@ -60,39 +60,41 @@
                     </div>
                     <div class="d-flex align-items-center gap-2 pt-2">
                         @if ($product->product_quantity > 0)
-                            <form id="addToCartForm" action="{{ route('add_to_cart', $product->id) }}" method="POST"
-                                class="d-flex align-items-center gap-2">
-                                @csrf
-                                {{-- Quantity Controls --}}
-                                <div class="input-group input-group-sm border rounded" style="width: 110px; height: 38px;">
-                                    <button class="btn btn-link text-dark text-decoration-none px-2" type="button"
-                                        id="minus-btn">
-                                        <i class="bi bi-dash"></i>
-                                    </button>
-                                    <input type="number" name="quantity" id="product-qty"
-                                        class="form-control border-0 text-center bg-transparent p-0" value="1" min="1"
-                                        max="{{ $availableStock }}" style="box-shadow: none; font-weight: bold;" readonly>
-                                    <button class="btn btn-link text-dark text-decoration-none px-2" type="button"
-                                        id="plus-btn">
-                                        <i class="bi bi-plus"></i>
-                                    </button>
-                                </div>
-
-                                {{-- Button Container with Absolute Error --}}
-                                <div class="position-relative">
-                                    {{-- Error message now sits absolutely ABOVE the button --}}
-                                    <div id="stock-error" class="text-danger fw-bold d-none position-absolute w-100 text-center"
-                                        style="font-size: 0.65rem; letter-spacing: 0.5px; top: -18px; left: 0; white-space: nowrap;">
-                                        <i class="bi bi-exclamation-triangle-fill"></i> MAX STOCK REACHED
+                            @if(!Auth::check() || Auth::user()->user_type !== 'admin')
+                                <form id="addToCartForm" action="{{ route('add_to_cart', $product->id) }}" method="POST"
+                                    class="d-flex align-items-center gap-2">
+                                    @csrf
+                                    {{-- Quantity Controls --}}
+                                    <div class="input-group input-group-sm border rounded" style="width: 110px; height: 38px;">
+                                        <button class="btn btn-link text-dark text-decoration-none px-2" type="button"
+                                            id="minus-btn">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" name="quantity" id="product-qty"
+                                            class="form-control border-0 text-center bg-transparent p-0" value="1" min="1"
+                                            max="{{ $availableStock }}" style="box-shadow: none; font-weight: bold;" readonly>
+                                        <button class="btn btn-link text-dark text-decoration-none px-2" type="button"
+                                            id="plus-btn">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
                                     </div>
 
-                                    <button type="submit" id="addToCartBtn"
-                                        class="btn btn-success btn-sm fw-bold shadow-sm text-uppercase tracking-wider px-3 py-2"
-                                        style="height: 38px;">
-                                        <i class="bi bi-cart-plus me-1"></i> Add to Cart
-                                    </button>
-                                </div>
-                            </form>
+                                    {{-- Button Container with Absolute Error --}}
+                                    <div class="position-relative">
+                                        {{-- Error message now sits absolutely ABOVE the button --}}
+                                        <div id="stock-error" class="text-danger fw-bold d-none position-absolute w-100 text-center"
+                                            style="font-size: 0.65rem; letter-spacing: 0.5px; top: -18px; left: 0; white-space: nowrap;">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> MAX STOCK REACHED
+                                        </div>
+
+                                        <button type="submit" id="addToCartBtn"
+                                            class="btn btn-success btn-sm fw-bold shadow-sm text-uppercase tracking-wider px-3 py-2"
+                                            style="height: 38px;">
+                                            <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                                        </button>
+                                    </div>
+                                </form>
+                            @endif
                         @else
                             {{-- Out of Stock State remains same --}}
                             ...
@@ -211,7 +213,6 @@
                                     if (statusContainer) {
                                         statusContainer.innerHTML = `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-2">Out of Stock</span>`;
                                     }
-                                    // Simply set quantity to 0 to show limit reached, but don't wipe the HTML
                                     qtyInput.value = 0;
                                 } else {
                                     qtyInput.value = 1;

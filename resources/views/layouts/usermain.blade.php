@@ -44,15 +44,17 @@
                 </ul>
 
                 <div class="d-flex align-items-center gap-3">
-                    <a href="{{ route('cart.index') }}" wire:navigate
-                        class="position-relative d-inline-block text-dark text-decoration-none mx-3">
-                        <i class="bi bi-cart serif fs-4"></i>
-                        <span id="cart-count"
-                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            style="font-size: 0.6rem; padding: 0.35em 0.65em; {{ $globalCartCount > 0 ? '' : 'display: none;' }}">
-                            {{ $globalCartCount }}
-                        </span>
-                    </a>
+                    @if(!Auth::check() || Auth::user()->user_type !== 'admin')
+                        <a href="{{ route('cart.index') }}" wire:navigate
+                            class="position-relative d-inline-block text-dark text-decoration-none mx-3">
+                            <i class="bi bi-cart serif fs-4"></i>
+                            <span id="cart-count"
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                style="font-size: 0.6rem; padding: 0.35em 0.65em; {{ $globalCartCount > 0 ? '' : 'display: none;' }}">
+                                {{ $globalCartCount }}
+                            </span>
+                        </a>
+                    @endif
                     @auth
                         <span class="fw-semibold text-dark small border-end pe-3 d-none d-md-inline">
                             Hi, {{ Auth::user()->name }}
