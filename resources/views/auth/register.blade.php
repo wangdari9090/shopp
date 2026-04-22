@@ -98,8 +98,8 @@
         </div>
     </div>
 </div>
-<script data-navigate-once>
-document.addEventListener('livewire:navigated', () => {
+<script>
+(function () {
     const registerForm = document.getElementById('registerForm');
     if (!registerForm) return;
 
@@ -114,15 +114,8 @@ document.addEventListener('livewire:navigated', () => {
     };
 
     document.querySelectorAll('.form-control').forEach(input => {
-        // TRIGGER: When user clicks/tabs into the field (Cursor active)
-        input.addEventListener('focus', function() {
-            clearError(this);
-        });
-
-        // TRIGGER: When user starts typing
-        input.addEventListener('input', function() {
-            clearError(this);
-        });
+        input.addEventListener('focus', function() { clearError(this); });
+        input.addEventListener('input', function() { clearError(this); });
     });
 
     // AJAX Registration Logic
@@ -157,6 +150,6 @@ document.addEventListener('livewire:navigated', () => {
         })
         .catch(error => console.error('Error:', error));
     });
-});
+})();
 </script>
 @endsection

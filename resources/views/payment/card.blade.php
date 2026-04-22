@@ -25,7 +25,7 @@
                     <button class="btn btn-dark rounded-0 py-3 fw-bold shadow-none">
                         PROCEED TO SECURE PORTAL
                     </button>
-                    <a href="{{ route('index') }}" wire:navigate class="btn btn-link text-decoration-none text-muted small mt-2">
+                    <a href="{{ route('index') }}" class="btn btn-link text-decoration-none text-muted small mt-2">
                         Cancel and return to gallery
                     </a>
                 </div>

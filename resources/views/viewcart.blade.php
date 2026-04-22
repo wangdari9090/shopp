@@ -332,8 +332,8 @@
         }
     </style>
 
-    <script data-navigate-once>
-        document.addEventListener('livewire:navigated', function () {
+    <script>
+        (function () {
             window.updateQty = function (id, action) {
                 fetch(`/cart/update/${id}`, {
                     method: 'POST',
@@ -411,11 +411,11 @@
             const orderForm = document.getElementById('order-form');
             if (orderForm) {
                 orderForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
                     const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
                     const btn = this.querySelector('button[type="submit"]');
 
                     if (!paymentMethod) {
-                        e.preventDefault();
                         const errorMsg = document.getElementById('payment-error-msg');
                         errorMsg.style.display = 'block';
                         errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -425,7 +425,6 @@
                     if (paymentMethod.value === 'online_banking') {
                         const bankName = document.querySelector('select[name="bank_name"]').value;
                         if (!bankName) {
-                            e.preventDefault();
                             alert('Please select your Bank Name.');
                             return;
                         }
@@ -434,7 +433,6 @@
                     if (paymentMethod.value === 'card') {
                         const cardType = document.querySelector('select[name="card_type"]').value;
                         if (!cardType) {
-                            e.preventDefault();
                             alert('Please select your Card Type.');
                             return;
                         }
@@ -442,8 +440,39 @@
 
                     btn.disabled = true;
                     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> PROCESSING...';
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: new FormData(this),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.redirect) {
+                            // Use SPA navigation to load the review page
+                            if (window._spaNavigate) {
+                                window._spaNavigate(data.redirect);
+                            } else {
+                                window.location.href = data.redirect;
+                            }
+                        } else {
+                            btn.disabled = false;
+                            btn.innerHTML = 'Confirm Order';
+                            alert(data.message || 'Something went wrong. Please try again.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                        btn.disabled = false;
+                        btn.innerHTML = 'Confirm Order';
+                        alert('Network error. Please try again.');
+                    });
                 });
             }
-        });
+        })();
     </script>
 @endsection

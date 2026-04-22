@@ -24,7 +24,7 @@
                 </div>
 
                 {{-- Product Visual Area --}}
-                <a href="{{ route('product.details', $product->id) }}" wire:navigate class="text-decoration-none">
+                <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none">
                     <div id="bestSellerCarousel{{ $product->id }}" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
                         <div class="carousel-inner">
                             @foreach($product->product_image as $imgIndex => $image)
@@ -43,7 +43,7 @@
 
                 {{-- Product Information --}}
                 <div class="p-3 text-center">
-                    <a href="{{ route('product.details', $product->id) }}" wire:navigate class="text-decoration-none">
+                    <a href="{{ route('product.details', $product->id) }}" class="text-decoration-none">
                         <h6 class="serif text-dark mb-1 fw-bold text-uppercase tracking-tight" style="font-size: 0.8rem; height: 2.4em; overflow: hidden;">
                             {{ Str::limit($product->product_title, 35) }}
                         </h6>

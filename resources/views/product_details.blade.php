@@ -112,7 +112,7 @@
             @foreach($related as $item)
                 <div class="col-6 col-md-4 col-lg-3">
                     <div class="product-arrival-card-carousel overflow-hidden h-100 border rounded-3 transition-all">
-                        <a href="{{ route('product.details', $item->id) }}" wire:navigate class="text-decoration-none">
+                        <a href="{{ route('product.details', $item->id) }}" class="text-decoration-none">
                             <div class="img-wrap p-3" style="aspect-ratio: 1/1; background: #fcfcfc;">
                                 <img src="{{ asset('storage/products/' . ($item->product_image[0] ?? 'default.jpg')) }}"
                                     class="w-100 h-100 object-fit-contain" alt="{{ $item->product_title }}">
@@ -129,7 +129,7 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script data-navigate-once>
+    <script>
         function changeMainImage(imagePath, element) {
             const mainImage = document.getElementById('mainProductImage');
             mainImage.style.opacity = '0';
@@ -141,7 +141,7 @@
             element.classList.add('border-success');
         }
 
-        document.addEventListener('livewire:navigated', function () {
+        (function () {
             const form = document.getElementById('addToCartForm');
             const plusBtn = document.getElementById('plus-btn');
             const minusBtn = document.getElementById('minus-btn');
@@ -193,7 +193,7 @@
                             'Accept': 'application/json'
                         }
                     })
-                        .then(response => response.status === 401 ? Livewire.navigate("{{ route('login') }}") : response.json())
+                        .then(response => response.status === 401 ? (window.location.href = "{{ route('login') }}") : response.json())
                         .then(data => {
                             if (data && data.success) {
                                 if (window.updateCartBadge) {
@@ -225,6 +225,6 @@
                         .catch(error => console.error('Error:', error));
                 };
             }
-        });
+        })();
     </script>
 @endsection

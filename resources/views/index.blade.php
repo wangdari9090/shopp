@@ -45,7 +45,7 @@
 
                                     {{-- Hover Action --}}
                                     <div class="product-action-overlay">
-                                        <a href="{{ route('product.details', $product->id) }}" wire:navigate
+                                        <a href="{{ route('product.details', $product->id) }}"
                                             class="btn-discover">
                                             View Piece
                                         </a>
@@ -94,7 +94,7 @@
                 @endphp
                 @foreach($categories as $id => $cat)
                     <div class="col-4 col-md-2">
-                        <a href="{{ route('category.products', $id) }}" wire:navigate class="text-decoration-none">
+                        <a href="{{ route('category.products', $id) }}" class="text-decoration-none">
                             <div class="minimal-cat-box">
                                 <div class="cat-icon-inner">
                                     <i class="bi {{ $cat['icon'] }}"></i>
@@ -122,7 +122,7 @@
                             <div class="product-arrival-card-carousel overflow-hidden">
 
                                 {{-- Wrap the image/carousel area in the route link --}}
-                                <a href="{{ route('product.details', $product->id) }}" wire:navigate
+                                <a href="{{ route('product.details', $product->id) }}"
                                     class="text-decoration-none">
                                     <div id="bestSellerCarousel{{ $product->id }}" class="carousel slide carousel-fade"
                                         data-bs-ride="carousel" data-bs-interval="3000">
@@ -142,7 +142,7 @@
 
                                 <div class="p-3 text-center border-top bg-white">
                                     {{-- Also wrap the title so users can click that too --}}
-                                    <a href="{{ route('product.details', $product->id) }}" wire:navigate
+                                    <a href="{{ route('product.details', $product->id) }}"
                                         class="text-decoration-none text-dark">
                                         <h6 class="product-name mb-1 fw-bold">
                                             {{ Str::limit($product->product_title, 20) }}
@@ -186,7 +186,7 @@
                     <h2 class="section-title-luxury mb-0">The Latest Movements</h2>
                     <p class="text-gold fw-bold small text-uppercase tracking-widest mb-0">New Arrivals</p>
                 </div>
-                <a href="/shop" wire:navigate class="btn-link-gold text-decoration-none fw-bold small">VIEW ALL <i
+                <a href="/shop" class="btn-link-gold text-decoration-none fw-bold small">VIEW ALL <i
                         class="bi bi-arrow-right"></i></a>
             </div>
 
@@ -217,7 +217,7 @@
                                             </button>
                                         </form>
                                     @endif
-                                    <a href="{{ route('product.details', $product->id) }}" wire:navigate
+                                    <a href="{{ route('product.details', $product->id) }}"
                                         class="btn-view-circle">
                                         <i class="bi bi-eye"></i>
                                     </a>
@@ -242,7 +242,7 @@
     </section>
 
     <script>
-        document.addEventListener('livewire:navigated', () => {
+        (function () {
 
             const initCarousels = () => {
                 document.querySelectorAll('.carousel').forEach(el => {
@@ -278,6 +278,6 @@
                     }
                 });
             });
-        });
+        })();
     </script>
 @endsection

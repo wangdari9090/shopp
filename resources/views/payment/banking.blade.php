@@ -31,10 +31,10 @@
             </div>
 
             <div class="d-grid gap-3">
-                <a href="{{ route('index') }}" wire:navigate class="btn btn-dark rounded-0 py-3 fw-bold tracking-widest">
+                <a href="{{ route('index') }}" class="btn btn-dark rounded-0 py-3 fw-bold tracking-widest">
                     I HAVE COMPLETED THE TRANSFER
                 </a>
-                <a href="{{ route('contact') }}" wire:navigate class="btn btn-link text-muted text-decoration-none small">
+                <a href="{{ route('contact') }}" class="btn btn-link text-muted text-decoration-none small">
                     Need help with your payment?
                 </a>
             </div>

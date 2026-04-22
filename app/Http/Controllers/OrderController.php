@@ -164,6 +164,8 @@ class OrderController extends Controller
 
     public function confirmOrder(Request $request)
     {
+        $isAjax = $request->ajax() || $request->wantsJson();
+
         $request->validate([
             'receiver_address' => 'required|string|max:255',
             'receiver_phone' => 'required|string|max:20',
@@ -176,6 +178,9 @@ class OrderController extends Controller
         $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
 
         if ($cartItems->isEmpty()) {
+            if ($isAjax) {
+                return response()->json(['success' => false, 'message' => 'Your selection is empty.'], 422);
+            }
             return redirect()->back()->with('error', 'Your selection is empty.');
         }
 
@@ -183,6 +188,9 @@ class OrderController extends Controller
             if ($checkItem->product->product_quantity < $checkItem->quantity) {
                 $title = $checkItem->product->product_title;
                 ProductCart::find($checkItem->id)?->delete();
+                if ($isAjax) {
+                    return response()->json(['success' => false, 'message' => "Sorry, {$title} is out of stock and has been removed from your selection."], 422);
+                }
                 return redirect()->back()->with('error', "Sorry, {$title} is out of stock and has been removed from your selection.");
             }
         }
@@ -197,6 +205,10 @@ class OrderController extends Controller
                 'card_type' => $request->card_type,
             ]
         ]);
+
+        if ($isAjax) {
+            return response()->json(['success' => true, 'redirect' => route('order.review')]);
+        }
 
         return redirect()->route('order.review');
     }

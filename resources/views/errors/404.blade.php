@@ -10,7 +10,7 @@
             <h2 class="serif text-uppercase tracking-widest mb-3">Timepiece Not Found</h2>
             <p class="text-muted mb-5 px-4">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
             
-            <a href="{{ url('/') }}" wire:navigate class="btn btn-outline-dark px-5 py-3 rounded-0 fw-bold small tracking-widest">
+            <a href="{{ url('/') }}" class="btn btn-outline-dark px-5 py-3 rounded-0 fw-bold small tracking-widest">
                 RETURN TO GALLERY
             </a>
         </div>
