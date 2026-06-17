@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ProductCart;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -14,18 +15,24 @@ class OrderController extends Controller
 {
     public function addToCart(Request $request, $id)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1'
-        ]);
+        $product = Product::findOrFail($id);
+        $qtyToAdd = (int) $request->input('quantity', 1);
 
-        $qtyToAdd = $request->input('quantity', 1);
-
-        $cartItem = ProductCart::where('user_id', Auth::id())
+        $alreadyInCart = ProductCart::where('user_id', Auth::id())
             ->where('product_id', $id)
             ->first();
 
-        if ($cartItem) {
-            $cartItem->increment('quantity', $qtyToAdd);
+        $currentCartQty = $alreadyInCart ? $alreadyInCart->quantity : 0;
+
+        if (($currentCartQty + $qtyToAdd) > $product->product_quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Not enough stock available.'
+            ], 422);
+        }
+
+        if ($alreadyInCart) {
+            $alreadyInCart->increment('quantity', $qtyToAdd);
         } else {
             ProductCart::create([
                 'user_id' => Auth::id(),
@@ -34,23 +41,41 @@ class OrderController extends Controller
             ]);
         }
 
-        $newCount = ProductCart::where('user_id', Auth::id())->sum('quantity');
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'newCount' => $newCount
-            ]);
+        $newVirtualStock = $product->product_quantity - ($currentCartQty + $qtyToAdd);
+
+        return response()->json([
+            'success' => true,
+            'newCount' => ProductCart::where('user_id', Auth::id())->sum('quantity'),
+            'virtualStock' => $newVirtualStock
+        ]);
+    }
+    public function show($id)
+    {
+        $product = Product::findOrFail($id);
+
+        $related = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $id)
+            ->take(4)
+            ->get();
+
+        $inCart = 0;
+        if (auth()->check()) {
+            $inCart = ProductCart::where('user_id', auth()->id())
+                ->where('product_id', $id)
+                ->value('quantity') ?? 0;
         }
 
-        return redirect()->back()->with('success', 'Selection updated.');
+        $availableStock = $product->product_quantity - $inCart;
+
+        return view('product_details', compact('product', 'related', 'availableStock'));
     }
 
     public function viewCart()
     {
         if (Auth::check()) {
             $cart = ProductCart::where('user_id', Auth::id())->with('product')->get();
-            $count = $cart->count();
+            $count = $cart->sum('quantity');
 
             $subtotal = 0;
             foreach ($cart as $item) {
@@ -74,7 +99,11 @@ class OrderController extends Controller
             if ($cartItem->quantity < $cartItem->product->product_quantity) {
                 $cartItem->increment('quantity');
             } else {
-                return response()->json(['success' => false, 'message' => 'Maximum stock reached'], 400);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'MAX STOCK REACHED',
+                    'limit' => $cartItem->product->product_quantity
+                ], 422);
             }
         } elseif ($action === 'reduce') {
             if ($cartItem->quantity > 1) {
@@ -143,7 +172,7 @@ class OrderController extends Controller
             'card_type'        => 'required_if:payment_method,card'
         ]);
 
-        $userId = Auth::id();
+        $userId    = Auth::id();
         $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
 
         if ($cartItems->isEmpty()) {
@@ -153,35 +182,87 @@ class OrderController extends Controller
         foreach ($cartItems as $checkItem) {
             if ($checkItem->product->product_quantity < $checkItem->quantity) {
                 $title = $checkItem->product->product_title;
-                $checkItem->delete();
+                ProductCart::find($checkItem->id)?->delete();
                 return redirect()->back()->with('error', "Sorry, {$title} is out of stock and has been removed from your selection.");
             }
         }
 
+        // Store checkout details in session — order is NOT created yet
+        session([
+            'pending_order' => [
+                'receiver_address' => $request->receiver_address,
+                'receiver_phone'   => $request->receiver_phone,
+                'payment_method'   => $request->payment_method,
+                'bank_name'        => $request->bank_name,
+                'card_type'        => $request->card_type,
+            ]
+        ]);
+
+        return redirect()->route('order.review');
+    }
+
+    public function reviewOrder()
+    {
+        $pending = session('pending_order');
+
+        if (!$pending) {
+            return redirect()->route('cart.index')->with('error', 'No pending order found. Please fill in your details again.');
+        }
+
+        $userId    = Auth::id();
+        $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
+
+        if ($cartItems->isEmpty()) {
+            session()->forget('pending_order');
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        }
+
+        $total      = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
+        $lastOrder  = Order::where('user_id', $userId)->latest('id')->first();
+        $nextNumber = $lastOrder ? (int) $lastOrder->user_order_number + 1 : 1;
+        $method     = $pending['payment_method'];
+
+        return view('payment.success', compact('total', 'nextNumber', 'method'));
+    }
+
+    public function finalizeOrder(Request $request)
+    {
+        $userId  = Auth::id();
+        $pending = session('pending_order');
+
+        if (!$pending) {
+            return response()->json(['success' => false, 'message' => 'Session expired. Please go back and try again.'], 422);
+        }
+
+        $cartItems = ProductCart::where('user_id', $userId)->with('product')->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Your cart is empty.'], 422);
+        }
+
         try {
-            return DB::transaction(function () use ($request, $cartItems, $userId) {
-                $total = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
-                $lastOrder = Order::where('user_id', $userId)->latest('id')->first();
-                $nextNumber = $lastOrder ? (int)$lastOrder->user_order_number + 1 : 1;
+            DB::transaction(function () use ($pending, $cartItems, $userId, $request) {
+                $total      = $cartItems->sum(fn($item) => $item->product->product_price * $item->quantity);
+                $lastOrder  = Order::where('user_id', $userId)->latest('id')->first();
+                $nextNumber = $lastOrder ? (int) $lastOrder->user_order_number + 1 : 1;
 
                 $order = Order::create([
                     'user_id'           => $userId,
                     'user_order_number' => $nextNumber,
-                    'receiver_address'  => $request->receiver_address,
-                    'receiver_phone'    => $request->receiver_phone,
+                    'receiver_address'  => $pending['receiver_address'],
+                    'receiver_phone'    => $pending['receiver_phone'],
                     'total_price'       => $total,
-                    'payment_method'    => $request->payment_method,
-                    'status'            => 'confirmed'
+                    'payment_method'    => $pending['payment_method'],
+                    'status'            => 'confirmed',
                 ]);
 
-                // --- ဒီနေရာမှာ bank_name logic ကို ထည့်လိုက်ပါ ---
                 $order->payment()->create([
-                    'method'    => $request->payment_method,
-                    'amount'    => $total,
-                    'status'    => ($request->payment_method === 'cod') ? 'awaiting_delivery' : 'pending',
-                    'bank_name' => $request->bank_name ?? $request->card_type ?? null, // ဒီစာကြောင်းလေးပါ
+                    'method'         => $pending['payment_method'],
+                    'amount'         => $total,
+                    'status'         => ($pending['payment_method'] === 'cod') ? 'awaiting_delivery' : 'pending',
+                    'bank_name'      => $pending['bank_name'] ?? $pending['card_type'] ?? null,
+                    'transaction_id' => $request->input('transaction_reference'),
                 ]);
-                // ------------------------------------------
 
                 foreach ($cartItems as $cartItem) {
                     OrderItem::create([
@@ -194,11 +275,12 @@ class OrderController extends Controller
                     $cartItem->delete();
                 }
 
-                return redirect()->route('payment.success', ['order' => $order->id, 'method' => $request->payment_method])
-                    ->with('success', 'Order Placed!');
+                session()->forget('pending_order');
             });
+
+            return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'An unexpected error occurred. Please try again.');
+            return response()->json(['success' => false, 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
     }
 }
